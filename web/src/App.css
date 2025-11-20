@@ -1,0 +1,216 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: 'Inter', 'HarmonyOS Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--surface-base, #f7f8fa);
+  color: var(--text-1, #1d2129);
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+a {
+  color: var(--primary-6, #165dff);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Theme tokens 映射 Ant/Arco 旧变量 */
+:root {
+  --primary-6: var(--brand-6, #3b82f6);
+  --color-bg-1: var(--surface-card, #ffffff);
+  --color-bg-2: var(--surface-base, #f7f8fa);
+  --color-text-1: var(--text-1, #1d2129);
+  --color-text-2: var(--text-2, #4e5969);
+  --color-text-3: var(--text-3, #86909c);
+  --color-fill-2: var(--surface-muted, #f7f8fa);
+  --color-border-1: var(--border-1, #e5e6eb);
+  --color-accent: var(--color-price, #f97316);
+  --color-success: var(--color-success, #10b981);
+  --color-warning: var(--color-warning, #facc15);
+  --color-danger: var(--color-error, #ef4444);
+}
+
+body[arco-theme='dark'] {
+  --primary-6: var(--brand-5, #60a5fa);
+  --color-bg-1: var(--surface-card, #17171a);
+  --color-bg-2: var(--surface-base, #0f172a);
+  --color-text-1: var(--text-1, #e5e6eb);
+  --color-text-2: var(--text-2, #a9aeb8);
+  --color-text-3: var(--text-3, #80838a);
+  --color-fill-2: var(--surface-muted, #1d1d20);
+  --color-border-1: var(--border-1, #2e2e32);
+  --color-accent: var(--color-price, #f97316);
+  --color-success: var(--color-success, #25c268);
+  --color-warning: var(--color-warning, #ff9333);
+  --color-danger: var(--color-error, #ff5d5d);
+}
+
+/* Primary Buttons */
+.arco-btn-primary,
+.ant-btn-primary,
+.btn-primary {
+  background: var(--gradient-primary, var(--primary-6));
+  border: none;
+  color: #fff;
+  border-radius: var(--radius-pill, 999px);
+  box-shadow: var(--shadow-brand, 0 10px 24px rgba(59, 130, 246, 0.35));
+  transition: var(--transition-base, all 0.3s ease);
+}
+
+.arco-btn-primary:hover,
+.ant-btn-primary:hover,
+.btn-primary:hover {
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px rgba(59, 130, 246, 0.4);
+}
+
+.arco-btn-primary:active,
+.ant-btn-primary:active,
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm, 0 4px 12px rgba(15, 23, 42, 0.16));
+}
+
+.ant-btn,
+.arco-btn {
+  border-radius: var(--radius-md, 12px);
+  font-weight: 600;
+  transition: var(--transition-base, all 0.3s ease);
+}
+
+.ant-btn:hover,
+.arco-btn:hover {
+  border-color: var(--brand-5, #60a5fa);
+  color: var(--brand-6, #3b82f6);
+}
+
+/* Inputs */
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-select-selector,
+.arco-input,
+.arco-input-wrapper,
+.arco-select-view {
+  border-radius: var(--radius-md, 12px) !important;
+  border: 1px solid var(--border-1, #e5e7eb) !important;
+  background: var(--surface-card, #ffffff) !important;
+  min-height: 44px;
+  transition: var(--transition-base, all 0.3s ease);
+  box-shadow: none !important;
+}
+
+/* 避免 Input.Search / 带前后缀输入框出现双重边框：
+   由外层容器负责描边，内部 input 透明无边框 */
+.ant-input-affix-wrapper .ant-input,
+.arco-input-wrapper .arco-input {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.ant-input:hover,
+.ant-input-affix-wrapper:hover,
+.ant-select-selector:hover,
+.arco-input:hover,
+.arco-input-wrapper:hover,
+.arco-select-view:hover {
+  border-color: var(--brand-4, #60a5fa) !important;
+}
+
+.ant-input:focus,
+.ant-input-affix-wrapper-focused,
+.ant-select-focused .ant-select-selector,
+.arco-input:focus,
+.arco-input-wrapper.arco-input-focus,
+.arco-select-view-focus {
+  border-color: var(--brand-5, #60a5fa) !important;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15) !important;
+}
+
+.ant-input::placeholder,
+.arco-input::placeholder {
+  color: var(--text-3, #94a3b8);
+}
+
+/* Select arrow颜色 */
+.ant-select-arrow,
+.arco-select-view-suffix {
+  color: var(--text-3, #94a3b8);
+}
+
+/* Tag & Badge 基础 */
+.ant-tag,
+.arco-tag {
+  border-radius: var(--radius-pill, 999px);
+  font-weight: 500;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-2, #f7f8fa);
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-text-3, #86909c) 40%, transparent 60%);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-text-3, #86909c) 60%, transparent 40%);
+}
+
+/* Button hover effect */
+button {
+  position: relative;
+  overflow: hidden;
+}
+
+button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.3) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+button:hover::after {
+  opacity: 1;
+}
+

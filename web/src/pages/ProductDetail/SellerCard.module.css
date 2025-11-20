@@ -1,0 +1,83 @@
+.sellerCard {
+  position: sticky;
+  top: 80px;
+  background: var(--color-bg-1, #ffffff);
+  border-radius: 8px;
+  padding: 24px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-text-1, #1d2129);
+}
+
+.sellerInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.info {
+  width: 100%;
+}
+
+.nickname {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text-1, #1d2129);
+  margin-bottom: 8px;
+}
+
+.campus {
+  font-size: 15px;
+  color: var(--color-text-3, #86909c);
+  margin-bottom: 12px;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.ratingText {
+  font-size: 14px;
+  color: var(--color-text-2, #4e5969);
+}
+
+.tips {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--color-fill-2, #f7f8fa);
+  border-radius: 6px;
+}
+
+.tips p {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-1, #1d2129);
+}
+
+.tips ul {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 12px;
+  color: var(--color-text-2, #4e5969);
+  line-height: 1.8;
+}
+

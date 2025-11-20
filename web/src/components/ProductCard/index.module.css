@@ -1,0 +1,190 @@
+.card {
+  border-radius: var(--radius-lg, 16px) !important;
+  overflow: hidden;
+  transition: var(--transition-base, all 0.3s ease);
+  background: var(--surface-card, #ffffff);
+  border: 1px solid rgba(15, 23, 42, 0.05);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  height: 420px;
+}
+
+.card :global(.arco-card-body) {
+  border-radius: 0 0 var(--radius-lg, 16px) var(--radius-lg, 16px);
+  background: transparent;
+  padding: var(--space-3, 12px) var(--space-4, 16px) var(--space-4, 16px);
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.card:hover {
+  border-color: var(--brand-100, rgba(59,130,246,0.18));
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-6px);
+}
+
+.cover {
+  position: relative;
+  width: 100%;
+  height: 270px;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--surface-muted, #f1f5f9);
+  border-radius: var(--radius-lg, 16px) var(--radius-lg, 16px) 0 0;
+}
+
+.cover img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover .cover img {
+  transform: scale(1.08);
+}
+
+/* Gradient Overlay for tags readability */
+.cover::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.55) 0%, rgba(15, 23, 42, 0) 100%);
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.statusBadge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+}
+
+.tags {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  z-index: 10;
+}
+
+/* 放大标签本身和内部文字，让“全新”“校区”等更醒目 */
+.tags :global(.arco-tag) {
+  font-size: 13px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill, 999px);
+  line-height: 18px;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.16);
+}
+
+.content {
+  padding: 0;
+  cursor: pointer;
+  /* 让内容在文字区域内滚动/裁剪，防止撑高卡片 */
+  overflow: hidden;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-1, #1e293b);
+  margin: 0 0 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.25;
+  min-height: 32px;
+}
+
+.price {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-price, #f97316);
+  background: rgba(249, 115, 22, 0.07);
+  padding: 4px 12px;
+  border-radius: var(--radius-pill, 999px);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 8px 0;
+}
+
+.description {
+  font-size: 14px;
+  color: var(--text-2, #4b5563);
+  margin: 0;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: var(--color-text-3, #94a3b8);
+}
+
+.seller {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.time {
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-3, #94a3b8);
+  padding-top: 8px;
+  border-top: 1px dashed var(--border-1, #e2e8f0);
+}
+
+.stats span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s;
+}
+
+.favoriteBtn {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.favoriteBtn:hover {
+  color: var(--accent-pink, #ec4899);
+  transform: scale(1.1);
+}
+
+

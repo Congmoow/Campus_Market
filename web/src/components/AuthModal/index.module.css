@@ -1,0 +1,395 @@
+/* 模态框整体样式 */
+.authModal :global(.arco-modal) {
+  border-radius: 24px !important;
+  overflow: hidden;
+}
+
+.authModal :global(.arco-modal-content) {
+  padding: 0;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 251, 252, 0.98) 100%);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+  animation: modalSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.authModal :global(.arco-modal-body) {
+  padding: 0;
+}
+
+.authModal :global(.arco-modal-close-icon) {
+  font-size: 18px;
+  transition: all 0.25s ease;
+}
+
+.authModal :global(.arco-modal-close-icon:hover) {
+  transform: rotate(90deg);
+  color: #ff4d4f;
+}
+
+/* Tabs 样式 */
+.tabs {
+  padding: 36px 40px 40px;
+}
+
+.tabs :global(.arco-tabs-header) {
+  margin-bottom: 32px;
+  border-bottom: 2px solid rgba(229, 230, 235, 0.6);
+}
+
+.tabs :global(.arco-tabs-header-nav) {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.tabs :global(.arco-tabs-header-title) {
+  flex: 1;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 600;
+  padding: 12px 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #86909c;
+}
+
+.tabs :global(.arco-tabs-header-title-active) {
+  color: #165dff !important;
+  font-weight: 700;
+}
+
+.tabs :global(.arco-tabs-header-ink) {
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(90deg, #165dff 0%, #4080ff 100%);
+  box-shadow: 0 2px 8px rgba(22, 93, 255, 0.3);
+}
+
+.tabContent {
+  padding: 0 8px;
+  animation: tabFadeIn 0.4s ease;
+}
+
+/* 头部样式 */
+.header {
+  text-align: center;
+  margin-bottom: 36px;
+  position: relative;
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, #165dff 0%, #722ed1 100%);
+  border-radius: 2px;
+}
+
+.header h2 {
+  font-size: 28px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #1d2129 0%, #4e5969 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.5px;
+}
+
+.header p {
+  font-size: 15px;
+  color: #86909c;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* 表单选项 */
+.formOptions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.formOptions :global(.arco-checkbox) {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.formOptions a {
+  color: #165dff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.formOptions a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #165dff 0%, #722ed1 100%);
+  transition: width 0.3s ease;
+}
+
+.formOptions a:hover {
+  color: #4080ff;
+}
+
+.formOptions a:hover::after {
+  width: 100%;
+}
+
+/* 表单项样式增强 */
+.tabs :global(.arco-form-item) {
+  margin-bottom: 22px;
+}
+
+.tabs :global(.arco-form-item-label-col > label) {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1d2129;
+  letter-spacing: 0.2px;
+}
+
+.tabs :global(.arco-input-wrapper),
+.tabs :global(.arco-select-view) {
+  border-radius: 36px;
+  border: 2px solid #e5e6eb;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #fafbfc 0%, #ffffff 100%);
+  padding: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.tabs :global(.arco-input-wrapper::before),
+.tabs :global(.arco-select-view::before) {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 36px;
+  padding: 2px;
+  background: linear-gradient(135deg, #165dff, #722ed1, #eb2f96);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.tabs :global(.arco-input-wrapper:hover),
+.tabs :global(.arco-select-view:hover) {
+  border-color: rgba(22, 93, 255, 0.5);
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(22, 93, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.tabs :global(.arco-input-wrapper.arco-input-focus),
+.tabs :global(.arco-select-view-focus) {
+  border-color: transparent;
+  background: #ffffff;
+  box-shadow: 0 6px 20px rgba(22, 93, 255, 0.18), 0 0 0 4px rgba(22, 93, 255, 0.06);
+  transform: translateY(-2px);
+}
+
+.tabs :global(.arco-input-wrapper.arco-input-focus::before),
+.tabs :global(.arco-select-view-focus::before) {
+  opacity: 1;
+}
+
+.tabs :global(.arco-input) {
+  font-size: 15px;
+  font-weight: 500;
+  color: #1d2129;
+  letter-spacing: 0.3px;
+}
+
+.tabs :global(.arco-input::placeholder) {
+  color: #c9cdd4;
+  font-weight: 400;
+}
+
+/* 图标美化 - 带分隔线 */
+.tabs :global(.arco-input-prefix) {
+  color: #86909c;
+  font-size: 20px;
+  margin-right: 0;
+  padding-right: 16px;
+  margin-left: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 44px;
+  transition: all 0.3s ease;
+  position: relative;
+  border-radius: 36px 0 0 36px;
+  background: linear-gradient(135deg, #f7f8fa 0%, #fafbfc 100%);
+}
+
+/* 图标右侧分隔线 */
+.tabs :global(.arco-input-prefix::after) {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 24px;
+  background: linear-gradient(180deg, transparent, #e5e6eb, transparent);
+  transition: all 0.3s ease;
+}
+
+.tabs :global(.arco-input-wrapper:hover .arco-input-prefix) {
+  color: #165dff;
+  background: linear-gradient(135deg, #f0f5ff 0%, #f5f8ff 100%);
+}
+
+.tabs :global(.arco-input-wrapper:hover .arco-input-prefix::after) {
+  background: linear-gradient(180deg, transparent, rgba(22, 93, 255, 0.2), transparent);
+}
+
+.tabs :global(.arco-input-wrapper.arco-input-focus .arco-input-prefix) {
+  color: #165dff;
+  background: linear-gradient(135deg, #e8f3ff 0%, #f0f5ff 100%);
+}
+
+.tabs :global(.arco-input-wrapper.arco-input-focus .arco-input-prefix::after) {
+  background: linear-gradient(180deg, transparent, rgba(22, 93, 255, 0.4), transparent);
+  height: 28px;
+}
+
+.tabs :global(.arco-input-prefix svg) {
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.05));
+}
+
+/* 输入内容区域 */
+.tabs :global(.arco-input-inner-wrapper) {
+  padding-left: 16px;
+}
+
+/* Select 选择框样式优化 - 与输入框保持一致 */
+.tabs :global(.arco-select-view-single) {
+  height: 44px;
+  background: linear-gradient(135deg, #fafbfc 0%, #ffffff 100%) !important;
+}
+
+.tabs :global(.arco-select-view-value) {
+  color: #1d2129;
+  font-weight: 500;
+  font-size: 15px;
+  padding-left: 12px;
+  letter-spacing: 0.3px;
+}
+
+.tabs :global(.arco-select) {
+  font-size: 15px;
+}
+
+.tabs :global(.arco-select-view-suffix) {
+  color: #4e5969;
+  transition: all 0.3s ease;
+  margin-right: 8px;
+}
+
+.tabs :global(.arco-select-view:hover .arco-select-view-suffix) {
+  color: #165dff;
+}
+
+.tabs :global(.arco-select-view-single:hover) {
+  background: #ffffff !important;
+}
+
+.tabs :global(.arco-select-view-single.arco-select-view-focus) {
+  background: #ffffff !important;
+}
+
+/* 按钮样式增强 */
+.tabs :global(.arco-btn-primary) {
+  height: 48px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #165dff 0%, #4080ff 100%);
+  border: none;
+  box-shadow: 0 6px 20px rgba(22, 93, 255, 0.25);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.tabs :global(.arco-btn-primary::before) {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s ease;
+}
+
+.tabs :global(.arco-btn-primary:hover) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(22, 93, 255, 0.35);
+}
+
+.tabs :global(.arco-btn-primary:hover::before) {
+  left: 100%;
+}
+
+.tabs :global(.arco-btn-primary:active) {
+  transform: translateY(0);
+  box-shadow: 0 4px 16px rgba(22, 93, 255, 0.2);
+}
+
+/* 动画定义 */
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes tabFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 响应式调整 */
+@media (max-width: 576px) {
+  .tabs {
+    padding: 28px 24px 32px;
+  }
+
+  .header h2 {
+    font-size: 24px;
+  }
+
+  .header p {
+    font-size: 14px;
+  }
+}
+

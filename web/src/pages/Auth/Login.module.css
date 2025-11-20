@@ -1,0 +1,98 @@
+.loginPage {
+  min-height: calc(100vh - 200px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.loginContainer {
+  width: 100%;
+  max-width: 400px;
+}
+
+.loginBox {
+  background: #fff;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.header h1 {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1d2129;
+  margin: 0 0 8px;
+}
+
+.header p {
+  font-size: 14px;
+  color: #86909c;
+  margin: 0;
+}
+
+.formOptions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.forgotLink {
+  color: #165dff;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.forgotLink:hover {
+  text-decoration: underline;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 14px;
+  color: #4e5969;
+}
+
+.registerLink {
+  color: #165dff;
+  margin-left: 8px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.registerLink:hover {
+  text-decoration: underline;
+}
+
+.tips {
+  margin-top: 24px;
+  padding: 12px;
+  background: #f7f8fa;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.tips p {
+  margin: 0;
+  font-size: 12px;
+  color: #86909c;
+}
+
+@media (max-width: 576px) {
+  .loginBox {
+    padding: 24px;
+  }
+
+  .header h1 {
+    font-size: 24px;
+  }
+}
+

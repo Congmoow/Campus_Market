@@ -1,0 +1,112 @@
+.myProductsPage {
+  min-height: 100vh;
+  padding: 40px 0;
+  background: var(--color-bg-2, #f7f8fa);
+  animation: pageEnter 0.4s ease-out;
+}
+
+.container {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  /* 桌面端左右留白更大一点，让列表不要贴边 */
+  padding: 0 144px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  padding: 32px;
+  background: linear-gradient(135deg, rgba(240,245,255,0.6) 0%, #fff 100%);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0,0,0,0.04));
+  border: 1px solid rgba(22,93,255,0.08);
+}
+
+.header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  background: var(--gradient-primary, linear-gradient(135deg, #165dff 0%, #4080ff 100%));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 8px;
+  letter-spacing: -0.5px;
+}
+
+.header p {
+  font-size: 16px;
+  color: var(--color-text-2, #4e5969);
+  margin: 0;
+  font-weight: 500;
+}
+
+.content {
+  margin-top: 24px;
+  animation: fadeInUp 0.5s ease-out 0.1s both;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.cardActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px;
+  background: var(--color-bg-1, #fff);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0,0,0,0.04));
+}
+
+.cardActions button {
+  flex: 1;
+  border-radius: 6px;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.cardActions button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(22,93,255,0.15);
+}
+
+.loading,
+.empty,
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 50vh;
+}
+
+@media (max-width: 768px) {
+  .myProductsPage {
+    padding: 24px 0;
+  }
+
+  .container {
+    /* 移动端保持较小左右间距，避免内容太窄 */
+    padding: 0 16px;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .header h1 {
+    font-size: 24px;
+  }
+
+  .header button {
+    width: 100%;
+  }
+}
+

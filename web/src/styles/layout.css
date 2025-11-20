@@ -1,0 +1,155 @@
+/* 
+  全局布局系统 - 确保所有尺寸显示器的一致性
+*/
+
+/* 容器宽度标准 */
+:root {
+  --container-max-width: 1400px;
+  --container-padding: 24px;
+  --container-gap: 16px;
+}
+
+/* 响应式断点 */
+@media (max-width: 1440px) {
+  :root {
+    --container-max-width: 1200px;
+  }
+}
+
+@media (max-width: 1200px) {
+  :root {
+    --container-max-width: 960px;
+    --container-padding: 20px;
+  }
+}
+
+@media (max-width: 992px) {
+  :root {
+    --container-max-width: 720px;
+    --container-padding: 16px;
+    --container-gap: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --container-max-width: 540px;
+    --container-padding: 16px;
+    --container-gap: 12px;
+  }
+}
+
+@media (max-width: 576px) {
+  :root {
+    --container-max-width: 100%;
+    --container-padding: 12px;
+    --container-gap: 8px;
+  }
+}
+
+/* 全局容器类 */
+.app-container {
+  max-width: var(--container-max-width);
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 var(--container-padding);
+}
+
+/* 网格系统 - 响应式列数 */
+.responsive-grid {
+  display: grid;
+  gap: var(--container-gap);
+}
+
+.responsive-grid-6 {
+  grid-template-columns: repeat(6, 1fr);
+}
+
+.responsive-grid-5 {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.responsive-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.responsive-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.responsive-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* 响应式网格断点 */
+@media (max-width: 1200px) {
+  .responsive-grid-6 {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .responsive-grid-5 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .responsive-grid-6,
+  .responsive-grid-5 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .responsive-grid-4 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .responsive-grid-6,
+  .responsive-grid-5,
+  .responsive-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .responsive-grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .responsive-grid-6,
+  .responsive-grid-5,
+  .responsive-grid-4,
+  .responsive-grid-3,
+  .responsive-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 确保所有元素不超出视口 */
+* {
+  max-width: 100%;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* 防止水平滚动 */
+html,
+body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* Flexbox 响应式工具类 */
+.flex-responsive {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--container-gap);
+}
+
+@media (max-width: 768px) {
+  .flex-responsive {
+    flex-direction: column;
+  }
+}
+
