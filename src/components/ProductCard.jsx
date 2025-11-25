@@ -1,10 +1,76 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, MapPin, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { favoriteApi } from '../api';
 
+// 简单的模块级缓存，避免为每个卡片重复请求收藏列表
+let favoriteIdsCache = null; // Set<number>
+let favoriteIdsPromise = null;
+
+const loadFavoriteIds = async () => {
+  if (favoriteIdsCache) return favoriteIdsCache;
+  if (!favoriteIdsPromise) {
+    favoriteIdsPromise = (async () => {
+      try {
+        const res = await favoriteApi.listMy();
+        if (res.success) {
+          const ids = new Set((res.data || []).map((p) => p.id));
+          favoriteIdsCache = ids;
+          return ids;
+        }
+      } catch (e) {
+        // 静默失败，视为没有收藏
+      }
+      const empty = new Set();
+      favoriteIdsCache = empty;
+      return empty;
+    })();
+  }
+  return favoriteIdsPromise;
+};
+
+export const invalidateFavoriteIdsCache = () => {
+  favoriteIdsCache = null;
+  favoriteIdsPromise = null;
+};
+
 const ProductCard = ({ product }) => {
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    if (!product?.id) return;
+    (async () => {
+      const ids = await loadFavoriteIds();
+      if (!mounted) return;
+      setIsFavorite(ids.has(product.id));
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [product?.id]);
+
+  const handleToggleFavorite = async (e) => {
+    e.preventDefault();
+    if (!product?.id) return;
+
+    const next = !isFavorite;
+    setIsFavorite(next);
+    try {
+      if (next) {
+        await favoriteApi.add(product.id);
+        if (favoriteIdsCache) favoriteIdsCache.add(product.id);
+      } else {
+        await favoriteApi.remove(product.id);
+        if (favoriteIdsCache) favoriteIdsCache.delete(product.id);
+      }
+    } catch (err) {
+      // 接口失败时回滚本地状态，避免与实际不一致
+      console.error('收藏操作失败', err);
+      setIsFavorite(!next);
+    }
+  };
   return (
     <Link to={`/product/${product.id}`} className="block h-full">
       <motion.div
@@ -21,19 +87,12 @@ const ProductCard = ({ product }) => {
           
           <div className="absolute top-3 right-3">
             <button 
-              className="p-2 bg-white/80 backdrop-blur-md rounded-full hover:bg-white text-slate-600 hover:text-red-500 transition-all shadow-sm hover:shadow-md transform hover:scale-110"
-              onClick={(e) => {
-                e.preventDefault();
-                if (!product?.id) return;
-                try {
-                  favoriteApi.add(product.id);
-                } catch (err) {
-                  // 静默失败，后续可接入全局提示
-                  console.error('收藏失败', err);
-                }
-              }}
+              className={`p-2 bg-white/80 backdrop-blur-md rounded-full hover:bg-white transition-all shadow-sm hover:shadow-md transform hover:scale-110 ${
+                isFavorite ? 'text-rose-500' : 'text-slate-600 hover:text-red-500'
+              }`}
+              onClick={handleToggleFavorite}
             >
-              <Heart size={18} />
+              <Heart size={18} className={isFavorite ? 'fill-rose-500' : ''} />
             </button>
           </div>
           

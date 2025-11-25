@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, MapPin, User, ArrowRight, Trash2, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { favoriteApi } from '../api';
+import { invalidateFavoriteIdsCache } from '../components/ProductCard';
 
 const MyFavorites = () => {
   const [favorites, setFavorites] = useState([]);
@@ -52,6 +53,7 @@ const MyFavorites = () => {
     try {
       await favoriteApi.remove(productId);
       setFavorites((prev) => prev.filter((item) => item.id !== productId));
+      invalidateFavoriteIdsCache();
     } catch (e) {
       console.error('取消收藏失败', e);
     }

@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { MapPin, Clock, Heart, Share2, MessageCircle, ShieldCheck } from 'lucide-react';
-import { productApi, chatApi } from '../api';
+import { productApi, chatApi, favoriteApi } from '../api';
+import { invalidateFavoriteIdsCache } from '../components/ProductCard';
 
 const formatTimeFromString = (timeStr) => {
   if (!timeStr) return '';
@@ -23,6 +24,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isFavorite, setIsFavorite] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -71,6 +73,45 @@ const ProductDetail = () => {
     }
   }, [id]);
 
+  // 根据当前用户收藏列表初始化详情页爱心状态
+  useEffect(() => {
+    let cancelled = false;
+    const loadFavoriteState = async () => {
+      if (!id) return;
+      try {
+        const res = await favoriteApi.listMy();
+        if (!res.success || cancelled) return;
+        const list = res.data || [];
+        const ids = new Set(list.map((p) => p.id));
+        setIsFavorite(ids.has(Number(id)));
+      } catch (e) {
+        // 静默失败，不影响其他逻辑
+      }
+    };
+
+    loadFavoriteState();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  const handleToggleFavorite = async () => {
+    if (!product?.id) return;
+    const next = !isFavorite;
+    setIsFavorite(next);
+    try {
+      if (next) {
+        await favoriteApi.add(product.id);
+      } else {
+        await favoriteApi.remove(product.id);
+      }
+      invalidateFavoriteIdsCache();
+    } catch (e) {
+      console.error('收藏操作失败', e);
+      setIsFavorite(!next);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       <Navbar />
@@ -111,8 +152,15 @@ const ProductDetail = () => {
                     <button className="p-2.5 rounded-full bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
                         <Share2 size={20} />
                     </button>
-                    <button className="p-2.5 rounded-full bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-500 transition-colors">
-                        <Heart size={20} />
+                    <button
+                      className={`p-2.5 rounded-full bg-slate-100 transition-colors ${
+                        isFavorite
+                          ? 'text-rose-500 bg-rose-50 hover:bg-rose-100'
+                          : 'text-slate-600 hover:bg-red-50 hover:text-red-500'
+                      }`}
+                      onClick={handleToggleFavorite}
+                    >
+                        <Heart size={20} className={isFavorite ? 'fill-rose-500' : ''} />
                     </button>
                  </div>
               </div>
