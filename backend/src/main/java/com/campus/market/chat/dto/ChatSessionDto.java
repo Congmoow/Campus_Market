@@ -2,6 +2,7 @@ package com.campus.market.chat.dto;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -18,6 +19,10 @@ public class ChatSessionDto {
     private Long productId;
 
     private String productTitle;
+
+    private String productThumbnail;
+
+    private BigDecimal productPrice;
 
     private String lastMessage;
 

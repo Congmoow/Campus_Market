@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Navbar from '../components/Navbar';
 import { motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
-import { Send, Paperclip, MoreVertical, Phone, Video, Image as ImageIcon, Smile } from 'lucide-react';
+import { Send, Paperclip, Image as ImageIcon, Smile } from 'lucide-react';
 import { chatApi } from '../api';
 
 const formatTime = (isoStr) => {
@@ -236,7 +236,7 @@ const Chat = () => {
           {/* Main Chat Area */}
           <div className="flex-1 flex flex-col bg-slate-50/30">
             {/* Chat Header */}
-            <div className="p-4 bg-white border-b border-slate-100 flex justify-between items-center">
+            <div className="p-4 bg-white border-b border-slate-100 flex justify-between items-center gap-4">
               {activeSession ? (
                 <Link to={`/user/${activeSession.partnerId}`} className="flex items-center gap-3 group">
                   {(() => {
@@ -263,17 +263,32 @@ const Chat = () => {
               ) : (
                 <div className="text-sm text-slate-400">请选择左侧会话开始聊天</div>
               )}
-              <div className="flex items-center gap-2 text-slate-500">
-                <button className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                  <Phone size={20} />
-                </button>
-                <button className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                  <Video size={20} />
-                </button>
-                <button className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                  <MoreVertical size={20} />
-                </button>
-              </div>
+              {activeSession && activeSession.productId && (
+                <Link
+                  to={`/product/${activeSession.productId}`}
+                  className="flex items-center gap-3 text-right"
+                >
+                  <div className="h-10 w-px bg-blue-500/70 rounded-full" />
+                  {activeSession.productThumbnail && (
+                    <img
+                      src={activeSession.productThumbnail}
+                      alt={activeSession.productTitle || '商品缩略图'}
+                      className="w-12 h-12 rounded-xl object-cover bg-slate-100 flex-shrink-0"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-slate-400 mb-0.5">正在沟通的商品</p>
+                    <p className="text-sm font-semibold text-slate-900 truncate">
+                      {activeSession.productTitle || '商品详情'}
+                    </p>
+                    {activeSession.productPrice != null && (
+                      <p className="mt-0.5 text-xs font-bold text-blue-600">
+                        ¥{activeSession.productPrice}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              )}
             </div>
 
             {/* Messages */}
@@ -285,55 +300,53 @@ const Chat = () => {
               ) : messages.length === 0 ? (
                 <div className="h-full flex items-center justify-center text-slate-400 text-sm">暂无消息，发送第一条吧～</div>
               ) : (
-                <>
-                  {messages.map((msg, index) => {
-                    const isMe = currentUser && msg.senderId === currentUser.id;
-                    return (
-                      <React.Fragment key={msg.id}>
-                        {shouldShowTimeDivider(messages, index) && (
-                          <div className="flex justify-center my-2 text-[11px] text-slate-400">
-                            <span>{formatMessageTimeLabel(msg.createdAt)}</span>
-                          </div>
-                        )}
-                        <div
-                          className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
-                        >
-                          <div className={`max-w-[70%] ${isMe ? 'order-2' : 'order-1'}`}>
-                            <div
-                              className={`rounded-2xl px-4 py-3 shadow-sm ${
-                                isMe
-                                  ? 'bg-blue-600 text-white rounded-tr-none'
-                                  : 'bg-white text-slate-700 rounded-tl-none border border-slate-100'
-                              }`}
-                            >
-                              {msg.type === 'IMAGE' ? (
-                                <img src={msg.content} alt="sent image" className="rounded-lg max-w-full" />
-                              ) : (
-                                <p className="leading-relaxed">{msg.content}</p>
-                              )}
-                            </div>
+                messages.map((msg, index) => {
+                  const isMe = currentUser && msg.senderId === currentUser.id;
+                  return (
+                    <React.Fragment key={msg.id}>
+                      {shouldShowTimeDivider(messages, index) && (
+                        <div className="flex justify-center my-2 text-[11px] text-slate-400">
+                          <span>{formatMessageTimeLabel(msg.createdAt)}</span>
+                        </div>
+                      )}
+                      <div
+                        className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div className={`max-w-[70%] ${isMe ? 'order-2' : 'order-1'}`}>
+                          <div
+                            className={`rounded-2xl px-4 py-3 shadow-sm ${
+                              isMe
+                                ? 'bg-blue-600 text-white rounded-tr-none'
+                                : 'bg-white text-slate-700 rounded-tl-none border border-slate-100'
+                            }`}
+                          >
+                            {msg.type === 'IMAGE' ? (
+                              <img src={msg.content} alt="sent image" className="rounded-lg max-w-full" />
+                            ) : (
+                              <p className="leading-relaxed">{msg.content}</p>
+                            )}
                           </div>
                         </div>
-                      </React.Fragment>
-                    );
-                  })}
-                  <div ref={messagesEndRef} />
-                </>
+                      </div>
+                    </React.Fragment>
+                  );
+                })
               )}
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Input Area */}
             <div className="p-4 bg-white border-t border-slate-100">
               <div className="flex gap-2 mb-2">
-                 <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors">
-                   <ImageIcon size={20} />
-                 </button>
-                 <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors">
-                   <Paperclip size={20} />
-                 </button>
-                 <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors">
-                   <Smile size={20} />
-                 </button>
+                <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors">
+                  <ImageIcon size={20} />
+                </button>
+                <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors">
+                  <Paperclip size={20} />
+                </button>
+                <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors">
+                  <Smile size={20} />
+                </button>
               </div>
               <div className="flex items-end gap-2">
                 <textarea

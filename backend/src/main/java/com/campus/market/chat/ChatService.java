@@ -7,6 +7,8 @@ import com.campus.market.chat.dto.StartChatRequest;
 import com.campus.market.common.exception.BusinessException;
 import com.campus.market.product.Product;
 import com.campus.market.product.ProductRepository;
+import com.campus.market.product.ProductService;
+import com.campus.market.product.dto.ProductListItemDto;
 import com.campus.market.user.UserProfile;
 import com.campus.market.user.UserProfileRepository;
 import org.springframework.stereotype.Service;
@@ -25,15 +27,18 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final UserProfileRepository userProfileRepository;
     private final ProductRepository productRepository;
+    private final ProductService productService;
 
     public ChatService(ChatSessionRepository chatSessionRepository,
                        ChatMessageRepository chatMessageRepository,
                        UserProfileRepository userProfileRepository,
-                       ProductRepository productRepository) {
+                       ProductRepository productRepository,
+                       ProductService productService) {
         this.chatSessionRepository = chatSessionRepository;
         this.chatMessageRepository = chatMessageRepository;
         this.userProfileRepository = userProfileRepository;
         this.productRepository = productRepository;
+        this.productService = productService;
     }
 
     @Transactional(readOnly = true)
@@ -194,11 +199,15 @@ public class ChatService {
         long unread = chatMessageRepository.countBySessionIdAndSenderIdNotAndReadFalse(session.getId(), currentUserId);
         dto.setUnreadCount(unread);
 
-        // product title 通过 productRepository 查询
+        // 通过 productRepository 和 productService 填充商品相关摘要信息
         if (session.getProductId() != null) {
             Product product = productRepository.findById(session.getProductId()).orElse(null);
             if (product != null) {
                 dto.setProductTitle(product.getTitle());
+
+                ProductListItemDto productListItemDto = productService.toListItemDto(product);
+                dto.setProductThumbnail(productListItemDto.getThumbnail());
+                dto.setProductPrice(productListItemDto.getPrice());
             }
         }
 
