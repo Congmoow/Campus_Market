@@ -11,6 +11,7 @@ import MyFavorites from './pages/MyFavorites';
 import SearchResults from './pages/SearchResults';
 import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
+import OrderDetail from './pages/OrderDetail';
 import Chat from './pages/Chat';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
@@ -40,6 +41,7 @@ function App() {
         <Route path="/user/:id" element={<UserProfile />} />
         <Route path="/checkout/:id" element={<Checkout />} />
         <Route path="/order-success" element={<OrderSuccess />} />
+        <Route path="/order/:id" element={<OrderDetail />} />
         <Route path="/my-products" element={<MyProducts />} />
         <Route path="/my-orders" element={<MyOrders />} />
         <Route path="/my-favorites" element={<MyFavorites />} />

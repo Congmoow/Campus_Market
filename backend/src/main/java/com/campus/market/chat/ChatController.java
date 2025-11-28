@@ -67,4 +67,12 @@ public class ChatController {
         User user = requireUser(principal);
         return ApiResponse.ok(chatService.sendMessage(sessionId, user.getId(), request));
     }
+
+    @PostMapping("/chats/{sessionId}/messages/{messageId}/recall")
+    public ApiResponse<ChatMessageDto> recallMessage(@PathVariable Long sessionId,
+                                                     @PathVariable Long messageId,
+                                                     Principal principal) {
+        User user = requireUser(principal);
+        return ApiResponse.ok(chatService.recallMessage(sessionId, messageId, user.getId()));
+    }
 }

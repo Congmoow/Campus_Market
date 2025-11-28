@@ -114,6 +114,9 @@ const UserProfile = () => {
           avatarUrl: updatedProfile.avatarUrl || user.avatarUrl,
         };
         localStorage.setItem('user', JSON.stringify(updatedUser));
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('user-profile-updated'));
+        }
       }
     } catch (e) {
       // 本地缓存更新失败时忽略

@@ -74,7 +74,7 @@ const Navbar = () => {
               sessionId: s.id,
               fromName: name,
               avatarUrl: avatar,
-              preview: s.lastMessage || (s.productTitle ? `关于「${s.productTitle}」的聊天` : '点击开始聊天'),
+              preview: s.lastMessage || '暂无聊天记录',
               time: formatNotificationTime(s.lastTime),
               unreadCount: s.unreadCount || 0,
             };
@@ -137,6 +137,15 @@ const Navbar = () => {
     
     window.addEventListener('storage', checkLogin);
     return () => window.removeEventListener('storage', checkLogin);
+  }, []);
+
+  useEffect(() => {
+    const handleProfileUpdated = () => {
+      const userStr = localStorage.getItem('user');
+      setCurrentUser(userStr ? JSON.parse(userStr) : null);
+    };
+    window.addEventListener('user-profile-updated', handleProfileUpdated);
+    return () => window.removeEventListener('user-profile-updated', handleProfileUpdated);
   }, []);
 
   const handleSearchSubmit = () => {
@@ -298,7 +307,6 @@ const Navbar = () => {
                         </div>
                         <div>
                           <p className="font-bold text-sm text-slate-900">{currentUser?.nickname || currentUser?.username}</p>
-                          <p className="text-xs text-slate-500">查看主页</p>
                         </div>
                       </Link>
                       <div className="h-px bg-slate-100 my-1" />

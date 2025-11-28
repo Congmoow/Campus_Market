@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, User, MapPin, GraduationCap, School, FileText } from 'lucide-react';
-import { userApi } from '../api';
+import { userApi, fileApi } from '../api';
 
 const EditProfileModal = ({ isOpen, onClose, currentProfile, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -10,9 +10,11 @@ const EditProfileModal = ({ isOpen, onClose, currentProfile, onSuccess }) => {
     grade: '',
     campus: '',
     bio: '',
+    avatarUrl: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     if (currentProfile && isOpen) {
@@ -22,6 +24,7 @@ const EditProfileModal = ({ isOpen, onClose, currentProfile, onSuccess }) => {
         grade: currentProfile.grade || '',
         campus: currentProfile.campus || '',
         bio: currentProfile.bio || '',
+        avatarUrl: currentProfile.avatarUrl || '',
       });
     }
   }, [currentProfile, isOpen]);
@@ -30,6 +33,30 @@ const EditProfileModal = ({ isOpen, onClose, currentProfile, onSuccess }) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     setError('');
+  };
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    setError('');
+    setUploadingAvatar(true);
+
+    try {
+      const res = await fileApi.uploadImage(file);
+      if (res.success && res.data && res.data.url) {
+        setFormData(prev => ({ ...prev, avatarUrl: res.data.url }));
+      } else {
+        setError(res.message || '头像上传失败，请稍后重试');
+      }
+    } catch (err) {
+      setError('头像上传失败，请稍后重试');
+    } finally {
+      setUploadingAvatar(false);
+      if (e.target) {
+        e.target.value = '';
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -93,6 +120,45 @@ const EditProfileModal = ({ isOpen, onClose, currentProfile, onSuccess }) => {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center">
+                  {formData.avatarUrl ? (
+                    <img
+                      src={formData.avatarUrl}
+                      alt="头像预览"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-xs text-slate-400">暂无头像</span>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-slate-500">自定义头像</p>
+                  <div className="flex items-center gap-2">
+                    <label className="inline-flex items-center px-3 py-1.5 rounded-full bg-slate-100 text-xs font-medium text-slate-700 cursor-pointer hover:bg-slate-200 transition-colors">
+                      {uploadingAvatar ? '上传中...' : '选择图片'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAvatarChange}
+                        disabled={uploadingAvatar}
+                      />
+                    </label>
+                    {formData.avatarUrl && (
+                      <button
+                        type="button"
+                        className="text-xs text-slate-400 hover:text-red-500"
+                        onClick={() => setFormData(prev => ({ ...prev, avatarUrl: '' }))}
+                      >
+                        清除
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-400">建议使用正方形图片，大小不超过2MB</p>
+                </div>
+              </div>
+
               <div className="space-y-1">
                 <label className="text-xs font-medium text-slate-700 ml-1 flex items-center gap-1">
                   <User size={14} /> 昵称

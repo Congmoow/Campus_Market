@@ -37,6 +37,7 @@ export const chatApi = {
   sendMessage: (sessionId, data) => request.post(`/chats/${sessionId}/messages`, data),
   startChat: (productId) => request.post('/chats/start', { productId }),
   markAllRead: () => request.post('/chats/read-all'),
+  recallMessage: (sessionId, messageId) => request.post(`/chats/${sessionId}/messages/${messageId}/recall`),
 };
 
 export const fileApi = {

@@ -235,10 +235,8 @@ const Publish = () => {
                   onChange={(e) => setLocation(e.target.value)}
                 >
                   <option value="">选择校区/地点</option>
-                  <option value="图书馆">图书馆</option>
-                  <option value="北区食堂">北区食堂</option>
-                  <option value="南区教学楼">南区教学楼</option>
-                  <option value="体育馆">体育馆</option>
+                  <option value="南浔校区">南浔校区</option>
+                  <option value="下沙校区">下沙校区</option>
                 </select>
               </div>
             </div>

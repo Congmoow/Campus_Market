@@ -27,7 +27,7 @@ public class ChatMessage {
     @Column(nullable = false, length = 10)
     private String type = "TEXT"; // TEXT / IMAGE
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false, columnDefinition = "LONGTEXT")
     private String content;
 
     @Column(name = "is_read", nullable = false)

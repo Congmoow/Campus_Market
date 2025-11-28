@@ -189,7 +189,7 @@ const MyOrders = () => {
                         <div className="flex justify-end gap-3 mt-4">
                            <button
                              className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all flex items-center gap-2"
-                             onClick={() => navigate(`/order-success?orderId=${order.id}`)}
+                             onClick={() => navigate(`/order/${order.id}`)}
                            >
                              查看详情 <ChevronRight size={16} />
                            </button>

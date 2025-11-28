@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -124,12 +125,58 @@ public class ChatService {
         ChatMessage message = new ChatMessage();
         message.setSessionId(sessionId);
         message.setSenderId(userId);
-        message.setType(request.getType() != null ? request.getType() : "TEXT");
+        String type = request.getType() != null ? request.getType() : "TEXT";
+        message.setType(type);
         message.setContent(request.getContent());
         message = chatMessageRepository.save(message);
 
-        session.setLastMessage(request.getContent());
+        String lastPreview;
+        if ("IMAGE".equalsIgnoreCase(type)) {
+            lastPreview = "[图片]";
+        } else {
+            lastPreview = request.getContent();
+        }
+
+        session.setLastMessage(lastPreview);
         session.setLastTime(LocalDateTime.now());
+        chatSessionRepository.save(session);
+
+        return toMessageDto(message);
+    }
+
+    public ChatMessageDto recallMessage(Long sessionId, Long messageId, Long userId) {
+        ChatSession session = chatSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new BusinessException("会话不存在"));
+        if (!Objects.equals(session.getBuyerId(), userId) && !Objects.equals(session.getSellerId(), userId)) {
+            throw new BusinessException("无权撤回该会话的消息");
+        }
+
+        ChatMessage message = chatMessageRepository.findById(messageId)
+                .orElseThrow(() -> new BusinessException("消息不存在"));
+
+        if (!Objects.equals(message.getSessionId(), sessionId)) {
+            throw new BusinessException("消息不属于该会话");
+        }
+
+        if (!Objects.equals(message.getSenderId(), userId)) {
+            throw new BusinessException("只能撤回自己发送的消息");
+        }
+
+        if (message.getCreatedAt() == null) {
+            throw new BusinessException("消息时间异常，无法撤回");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        if (Duration.between(message.getCreatedAt(), now).toMinutes() >= 2) {
+            throw new BusinessException("超过可撤回时间，无法撤回");
+        }
+
+        message.setType("RECALL");
+        message.setContent("");
+        chatMessageRepository.save(message);
+
+        session.setLastMessage("一条消息已被撤回");
+        session.setLastTime(now);
         chatSessionRepository.save(session);
 
         return toMessageDto(message);

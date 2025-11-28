@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Navbar from '../components/Navbar';
 import { motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
-import { Send, Paperclip, Image as ImageIcon, Smile } from 'lucide-react';
+import { Send, Image as ImageIcon, Smile } from 'lucide-react';
 import { chatApi } from '../api';
 
 const formatTime = (isoStr) => {
@@ -66,6 +66,8 @@ const Chat = () => {
   const [loadingSessions, setLoadingSessions] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [hasInitialScroll, setHasInitialScroll] = useState(false);
 
   const currentUser = useMemo(() => {
     try {
@@ -85,16 +87,31 @@ const Chat = () => {
   }, [location.search]);
 
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const imageInputRef = useRef(null);
 
-  const scrollToBottom = () => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    }
+  const scrollToBottom = (behavior = 'smooth') => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior,
+    });
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (!messages || messages.length === 0) return;
+    const behavior = hasInitialScroll ? 'smooth' : 'auto';
+    const timer = setTimeout(() => {
+      scrollToBottom(behavior);
+    }, 0);
+
+    if (!hasInitialScroll) {
+      setHasInitialScroll(true);
+    }
+
+    return () => clearTimeout(timer);
+  }, [messages, hasInitialScroll]);
 
   const loadSessions = async (preferredSessionId) => {
     setLoadingSessions(true);
@@ -112,6 +129,7 @@ const Chat = () => {
             }
           }
           setCurrentSessionId(target.id);
+          setHasInitialScroll(false);
           await loadMessages(target.id);
         }
       } else {
@@ -149,6 +167,7 @@ const Chat = () => {
   const handleSelectSession = async (session) => {
     if (session.id === currentSessionId) return;
     setCurrentSessionId(session.id);
+    setHasInitialScroll(false);
     await loadMessages(session.id);
   };
 
@@ -181,11 +200,114 @@ const Chat = () => {
     [sessions, currentSessionId]
   );
 
+  const myAvatarUrl = useMemo(() => {
+    if (!currentUser) return null;
+    const seed = currentUser.id || currentUser.username || 'user';
+    return currentUser.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}`;
+  }, [currentUser]);
+
+  const handleEmojiSelect = (emoji) => {
+    setMessage((prev) => prev + emoji);
+    setShowEmojiPicker(false);
+  };
+
+  const handleImageButtonClick = () => {
+    if (!activeSession || !imageInputRef.current || sending) return;
+    imageInputRef.current.click();
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file || !currentSessionId) {
+      return;
+    }
+
+    // 允许再次选择同一张图片
+    e.target.value = '';
+
+    try {
+      setSending(true);
+
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (err) => reject(err);
+        reader.readAsDataURL(file);
+      });
+
+      if (!dataUrl || typeof dataUrl !== 'string') {
+        alert('读取图片失败，请稍后重试');
+        return;
+      }
+
+      const sendRes = await chatApi.sendMessage(currentSessionId, {
+        type: 'IMAGE',
+        content: dataUrl,
+      });
+
+      if (sendRes.success) {
+        setMessages((prev) => [...prev, sendRes.data]);
+        setSessions((prev) =>
+          prev.map((s) =>
+            s.id === currentSessionId
+              ? { ...s, lastMessage: '[图片]', lastTime: sendRes.data.createdAt }
+              : s
+          )
+        );
+      } else {
+        alert(sendRes.message || '发送图片失败');
+      }
+    } catch (err) {
+      console.error('发送图片失败', err);
+      alert('发送图片失败，请稍后重试');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const canRecall = (msg) => {
+    if (!currentUser || !msg || !msg.createdAt) return false;
+    if (msg.type === 'RECALL') return false;
+    if (msg.senderId !== currentUser.id) return false;
+    const created = new Date(msg.createdAt).getTime();
+    if (Number.isNaN(created)) return false;
+    const diff = Date.now() - created;
+    return diff <= 2 * 60 * 1000;
+  };
+
+  const handleRecall = async (msg) => {
+    if (!currentSessionId || !msg || !canRecall(msg)) return;
+    const isLast = messages.length > 0 && messages[messages.length - 1].id === msg.id;
+    try {
+      const res = await chatApi.recallMessage(currentSessionId, msg.id);
+      if (res.success && res.data) {
+        const recalled = res.data;
+        setMessages((prev) => prev.map((m) => (m.id === msg.id ? recalled : m)));
+        if (isLast) {
+          setSessions((prev) =>
+            prev.map((s) =>
+              s.id === currentSessionId
+                ? { ...s, lastMessage: '你撤回了一条消息', lastTime: recalled.createdAt }
+                : s
+            )
+          );
+        }
+      } else {
+        alert(res.message || '撤回失败，请稍后重试');
+      }
+    } catch (error) {
+      console.error('撤回消息失败', error);
+      const msgText = error?.response?.data?.message || '撤回失败，可能已超过可撤回时间';
+      alert(msgText);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+
+    <div className="h-screen bg-slate-50 flex flex-col overflow-hidden">
       <Navbar />
       
-      <div className="flex-1 pt-24 pb-6 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 h-[calc(100vh-6rem)]">
+      <div className="flex-1 pt-24 pb-6 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 overflow-hidden">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex h-full min-h-[520px]">
           {/* Sidebar - Chat List */}
           <div className="w-80 border-r border-slate-100 flex flex-col hidden md:flex">
@@ -224,7 +346,7 @@ const Chat = () => {
                           <h3 className="font-semibold text-slate-900 truncate">{name}</h3>
                           <span className="text-xs text-slate-400">{formatTime(session.lastTime)}</span>
                         </div>
-                        <p className="text-sm text-slate-500 truncate">{session.lastMessage || '点击开始聊天'}</p>
+                        <p className="text-sm text-slate-500 truncate">{session.lastMessage || '暂无聊天记录'}</p>
                       </div>
                     </div>
                   );
@@ -292,7 +414,10 @@ const Chat = () => {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 min-h-[260px] overflow-y-auto p-4 space-y-4">
+            <div
+              ref={messagesContainerRef}
+              className="flex-1 min-h-[260px] overflow-y-auto p-4 space-y-4 no-scrollbar"
+            >
               {loadingMessages ? (
                 <div className="h-full flex items-center justify-center text-slate-400 text-sm">加载消息中...</div>
               ) : !activeSession ? (
@@ -302,6 +427,8 @@ const Chat = () => {
               ) : (
                 messages.map((msg, index) => {
                   const isMe = currentUser && msg.senderId === currentUser.id;
+                  const isRecalled = msg.type === 'RECALL';
+                  const showRecall = isMe && canRecall(msg);
                   return (
                     <React.Fragment key={msg.id}>
                       {shouldShowTimeDivider(messages, index) && (
@@ -309,25 +436,58 @@ const Chat = () => {
                           <span>{formatMessageTimeLabel(msg.createdAt)}</span>
                         </div>
                       )}
-                      <div
-                        className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
-                      >
-                        <div className={`max-w-[70%] ${isMe ? 'order-2' : 'order-1'}`}>
-                          <div
-                            className={`rounded-2xl px-4 py-3 shadow-sm ${
-                              isMe
-                                ? 'bg-blue-600 text-white rounded-tr-none'
-                                : 'bg-white text-slate-700 rounded-tl-none border border-slate-100'
-                            }`}
-                          >
-                            {msg.type === 'IMAGE' ? (
-                              <img src={msg.content} alt="sent image" className="rounded-lg max-w-full" />
-                            ) : (
-                              <p className="leading-relaxed">{msg.content}</p>
+
+                      {isRecalled ? (
+                        <div className="flex justify-center my-1 text-[11px] text-slate-400">
+                          <span className="px-3 py-1 rounded-full bg-slate-100/80 border border-slate-200">
+                            {isMe ? '你撤回了一条消息' : '对方撤回了一条消息'}
+                          </span>
+                        </div>
+                      ) : (
+                        <div
+                          className={`flex gap-2 ${isMe ? 'items-center justify-end' : 'items-end justify-start'}`}
+                        >
+                          <div className="max-w-[70%] flex flex-col gap-1">
+                            <div className="relative">
+                              <div
+                                className={`rounded-2xl px-4 py-3 shadow-sm ${
+                                  isMe
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-white text-slate-700 rounded-tl-none border border-slate-100'
+                                }`}
+                              >
+                                {msg.type === 'IMAGE' ? (
+                                  <img
+                                    src={msg.content}
+                                    alt="sent image"
+                                    className="rounded-lg max-w-full"
+                                    onLoad={() => scrollToBottom('auto')}
+                                  />
+                                ) : (
+                                  <p className="leading-relaxed">{msg.content}</p>
+                                )}
+                              </div>
+                              {isMe && (
+                                <span className="absolute right-[-6px] top-1/2 -translate-y-1/2 w-3 h-3 bg-blue-600 rotate-45" />
+                              )}
+                            </div>
+                            {showRecall && (
+                              <button
+                                type="button"
+                                onClick={() => handleRecall(msg)}
+                                className="self-end text-[11px] text-slate-400 hover:text-red-500 transition-colors"
+                              >
+                                撤回
+                              </button>
                             )}
                           </div>
+                          {isMe && myAvatarUrl && (
+                            <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden flex-shrink-0">
+                              <img src={myAvatarUrl} alt="" className="w-full h-full object-cover" />
+                            </div>
+                          )}
                         </div>
-                      </div>
+                      )}
                     </React.Fragment>
                   );
                 })
@@ -337,16 +497,49 @@ const Chat = () => {
 
             {/* Input Area */}
             <div className="p-4 bg-white border-t border-slate-100">
-              <div className="flex gap-2 mb-2">
-                <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors">
+              <div className="flex gap-2 mb-2 relative">
+                <button
+                  type="button"
+                  onClick={handleImageButtonClick}
+                  disabled={!activeSession || sending}
+                  className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   <ImageIcon size={20} />
                 </button>
-                <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors">
-                  <Paperclip size={20} />
-                </button>
-                <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors">
+                <button
+                  type="button"
+                  onClick={() => setShowEmojiPicker((prev) => !prev)}
+                  disabled={!activeSession}
+                  className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   <Smile size={20} />
                 </button>
+
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
+
+                {showEmojiPicker && (
+                  <div className="absolute bottom-12 left-0 z-10 w-64 rounded-2xl bg-white border border-slate-100 shadow-lg p-3">
+                    <div className="text-xs text-slate-400 mb-2">常用表情</div>
+                    <div className="grid grid-cols-8 gap-1 text-xl">
+                      {['😀','😁','😂','🤣','😊','😍','😎','😘','🤔','🥰','😅','😢','😡','👍','👎','🙏','👏','🎉','❤️','🔥','⭐','✅','❌'].map((emoji) => (
+                        <button
+                          key={emoji}
+                          type="button"
+                          className="hover:bg-slate-100 rounded-md flex items-center justify-center"
+                          onClick={() => handleEmojiSelect(emoji)}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="flex items-end gap-2">
                 <textarea
