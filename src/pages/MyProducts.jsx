@@ -3,7 +3,7 @@ import Navbar from '../components/Navbar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Package, Clock, Eye, Heart, Edit, Trash2, Plus, Filter, Search, MoreVertical } from 'lucide-react';
 import { userApi, productApi } from '../api';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import EditProductModal from '../components/EditProductModal';
 
 // 格式化时间函数
@@ -14,6 +14,7 @@ const formatTime = (timeStr) => {
 };
 
 const MyProducts = () => {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('ALL'); // ALL, ON_SALE, SOLD
@@ -79,9 +80,11 @@ const MyProducts = () => {
   const getStatusBadge = (status) => {
     switch(status) {
       case 'ON_SALE':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200">在售</span>;
+        // 在售商品不再展示状态角标
+        return null;
       case 'SOLD':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">已售出</span>;
+        // 已售出由大号“卖掉了”贴纸体现，这里不再额外显示文字角标
+        return null;
       default:
         return <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">未知</span>;
     }
@@ -246,6 +249,7 @@ const MyProducts = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
                 className="group bg-white rounded-2xl overflow-hidden border border-slate-100 hover:shadow-xl hover:shadow-slate-200/50 hover:border-blue-100 transition-all duration-300"
+                onClick={() => navigate(`/product/${product.id}`)}
               >
                 {/* Image Container */}
                 <div className="relative h-56 overflow-hidden bg-slate-100">
@@ -260,56 +264,15 @@ const MyProducts = () => {
                     {getStatusBadge(product.status)}
                   </div>
 
-                  {/* Action Buttons on Hover */}
-                  <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 translate-y-full group-hover:translate-y-0 transition-transform duration-300 px-4">
-                    <Link to={`/product/${product.id}`} className="flex-1">
-                      <button className="w-full py-2 bg-white/90 backdrop-blur-sm hover:bg-white text-slate-900 rounded-lg text-sm font-medium shadow-lg transition-colors flex items-center justify-center gap-1">
-                        <Eye size={14} /> 查看
-                      </button>
-                    </Link>
-                    <div className="relative">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowActionMenu(showActionMenu === product.id ? null : product.id);
-                        }}
-                        className="p-2 bg-white/90 backdrop-blur-sm hover:bg-slate-100 rounded-lg shadow-lg transition-colors"
-                      >
-                        <MoreVertical size={16} className="text-slate-600" />
-                      </button>
-                      
-                      {/* 操作菜单 */}
-                      {showActionMenu === product.id && (
-                        <div className="absolute bottom-full right-0 mb-2 w-40 bg-white rounded-lg shadow-xl border border-slate-100 py-1 z-50">
-                          <button
-                            onClick={() => handleEdit(product)}
-                            className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50 text-slate-700 flex items-center gap-2"
-                          >
-                            <Edit size={14} /> 编辑信息
-                          </button>
-                          <button
-                            onClick={() => handleToggleStatus(product)}
-                            disabled={updatingId === product.id}
-                            className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50 text-slate-700 flex items-center gap-2 disabled:opacity-60"
-                          >
-                            {product.status === 'ON_SALE' ? (
-                              <><Package size={14} /> 标记已售</>
-                            ) : (
-                              <><Package size={14} /> 重新上架</>
-                            )}
-                          </button>
-                          <div className="h-px bg-slate-100 my-1" />
-                          <button
-                            onClick={() => handleDelete(product)}
-                            disabled={deletingId === product.id}
-                            className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 text-red-600 flex items-center gap-2 disabled:opacity-60"
-                          >
-                            <Trash2 size={14} /> 删除商品
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+					{product.status === 'SOLD' && (
+						<div className="absolute inset-0 pointer-events-none">
+							<img
+								src="/images/sold-out.jpg"
+								alt="已售出"
+								className="w-full h-full object-cover opacity-90"
+							/>
+						</div>
+					)}
                 </div>
 
                 {/* Content */}
@@ -326,15 +289,61 @@ const MyProducts = () => {
                     <span className="text-xl font-bold text-red-500 font-mono">
                       ¥{product.price}
                     </span>
-                    <div className="flex items-center text-slate-400 text-xs gap-3">
-                      <span className="flex items-center gap-1" title="发布时间">
-                        <Clock size={12} />
-                        {formatTime(product.createdAt).split(' ')[0]}
-                      </span>
-                      <span className="flex items-center gap-1" title="浏览量">
-                        <Eye size={12} />
-                        {product.viewCount || 0}
-                      </span>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center text-slate-400 text-xs gap-3">
+                        <span className="flex items-center gap-1" title="发布时间">
+                          <Clock size={12} />
+                          {formatTime(product.createdAt).split(' ')[0]}
+                        </span>
+                        <span className="flex items-center gap-1" title="浏览量">
+                          <Eye size={12} />
+                          {product.viewCount || 0}
+                        </span>
+                      </div>
+                      <div className="relative">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowActionMenu(showActionMenu === product.id ? null : product.id);
+                          }}
+                          className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
+                        >
+                          <MoreVertical size={16} className="text-inherit" />
+                        </button>
+                        {/* 操作菜单 */}
+                        {showActionMenu === product.id && (
+                          <div
+                            className="absolute bottom-full right-0 mb-2 w-40 bg-white rounded-lg shadow-xl border border-slate-100 py-1 z-50"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <button
+                              onClick={() => handleEdit(product)}
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50 text-slate-700 flex items-center gap-2"
+                            >
+                              <Edit size={14} /> 编辑信息
+                            </button>
+                            <button
+                              onClick={() => handleToggleStatus(product)}
+                              disabled={updatingId === product.id}
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50 text-slate-700 flex items-center gap-2 disabled:opacity-60"
+                            >
+                              {product.status === 'ON_SALE' ? (
+                                <><Package size={14} /> 标记已售</>
+                              ) : (
+                                <><Package size={14} /> 重新上架</>
+                              )}
+                            </button>
+                            <div className="h-px bg-slate-100 my-1" />
+                            <button
+                              onClick={() => handleDelete(product)}
+                              disabled={deletingId === product.id}
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 text-red-600 flex items-center gap-2 disabled:opacity-60"
+                            >
+                              <Trash2 size={14} /> 删除商品
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

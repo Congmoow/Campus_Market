@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { motion } from 'framer-motion';
-import { Upload, X, DollarSign, MapPin } from 'lucide-react';
+import { Upload, X, DollarSign, MapPin, ChevronDown, Save, Rocket, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { productApi, fileApi } from '../api';
+
+const CAMPUS_OPTIONS = ['下沙校区', '南浔校区'];
 
 const Publish = () => {
   const [images, setImages] = useState([]); // [{id, preview, url, uploading}]
@@ -15,8 +17,23 @@ const Publish = () => {
   const [location, setLocation] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [locationOpen, setLocationOpen] = useState(false);
+  const locationDropdownRef = useRef(null);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!locationOpen) return;
+    const handleClickOutside = (event) => {
+      if (locationDropdownRef.current && !locationDropdownRef.current.contains(event.target)) {
+        setLocationOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [locationOpen]);
 
   const categories = ["数码产品", "书籍教材", "生活用品", "衣物鞋帽", "美妆护肤", "运动器材", "其他"];
 
@@ -57,8 +74,24 @@ const Publish = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title || !description || !price) {
-      setError('请至少填写标题、描述和价格');
+    if (!title.trim()) {
+      setError('请输入商品标题');
+      return;
+    }
+    if (!description.trim()) {
+      setError('请输入商品描述');
+      return;
+    }
+    if (!price || Number(price) <= 0) {
+      setError('请输入有效的价格');
+      return;
+    }
+    if (!category) {
+      setError('请选择商品分类');
+      return;
+    }
+    if (!location) {
+      setError('请选择发布地点');
       return;
     }
     if (images.some(img => img.uploading)) {
@@ -108,9 +141,31 @@ const Publish = () => {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden"
         >
-          <div className="p-8 border-b border-slate-100">
-            <h1 className="text-2xl font-bold text-slate-900">发布闲置</h1>
-            <p className="text-slate-500 mt-1">填写物品信息，快速回血</p>
+          <div className="p-8 border-b border-slate-100 flex items-center justify-between gap-6">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">发布闲置</h1>
+              <p className="text-slate-500 mt-1">填写物品信息，快速回血</p>
+            </div>
+
+            {/* 右侧动态图：发布成功 & 回血动画提示（在中大屏显示） */}
+            <motion.div
+              className="hidden sm:flex items-center gap-3 pl-5 pr-8 py-3 rounded-full bg-gradient-to-r from-emerald-50 via-blue-50 to-sky-50 backdrop-blur-md border border-emerald-100/70 shadow-lg shadow-slate-200/70"
+              animate={{ y: [0, -6, 0] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <div className="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-400/60">
+                <DollarSign size={22} />
+              </div>
+              <div className="text-[13px] text-left leading-snug">
+                <div className="font-semibold text-emerald-700 flex items-center gap-1">
+                  <TrendingUp size={14} />
+                  <span>发布成功 · 余额回血中</span>
+                </div>
+                <div className="text-emerald-500 mt-0.5">
+                  已帮 120+ 位同学回血零花钱
+                </div>
+              </div>
+            </motion.div>
           </div>
 
           <form className="p-8 space-y-8" onSubmit={handleSubmit}>
@@ -146,24 +201,24 @@ const Publish = () => {
             {/* Basic Info */}
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">标题</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">标题 <span className="text-red-500">*</span></label>
                 <input
                   type="text"
                   placeholder="品牌型号 + 关键特点"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">详细描述</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">详细描述 <span className="text-red-500">*</span></label>
                 <textarea
                   rows={5}
                   placeholder="描述一下物品的新旧程度、入手渠道、转手原因等..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all resize-none"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none"
                 />
               </div>
             </div>
@@ -171,7 +226,7 @@ const Publish = () => {
             {/* Details */}
             <div className="grid sm:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">价格</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">价格 <span className="text-red-500">*</span></label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
                     <DollarSign size={18} />
@@ -181,7 +236,7 @@ const Publish = () => {
                     placeholder="0.00"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                   />
                 </div>
               </div>
@@ -197,14 +252,14 @@ const Publish = () => {
                     placeholder="0.00"
                     value={originalPrice}
                     onChange={(e) => setOriginalPrice(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                   />
                 </div>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">分类</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">分类 <span className="text-red-500">*</span></label>
               <div className="flex flex-wrap gap-2">
                 {categories.map((cat) => (
                   <button
@@ -224,20 +279,43 @@ const Publish = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">交易地点</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                  <MapPin size={18} />
-                </div>
-                <select
-                  className="w-full pl-10 pr-10 py-3 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all appearance-none text-slate-600"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
+              <label className="block text-sm font-medium text-slate-700 mb-2">发布地点 <span className="text-red-500">*</span></label>
+              <div className="relative" ref={locationDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setLocationOpen((open) => !open)}
+                  className="w-full pl-10 pr-10 py-3 rounded-xl bg-slate-50 border border-slate-200 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-left flex items-center"
                 >
-                  <option value="">选择校区/地点</option>
-                  <option value="南浔校区">南浔校区</option>
-                  <option value="下沙校区">下沙校区</option>
-                </select>
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                    <MapPin size={18} />
+                  </div>
+                  <span className={`flex-1 ${location ? 'text-slate-900' : 'text-slate-400'}`}>
+                    {location || '选择校区/地点'}
+                  </span>
+                </button>
+                <div className="pointer-events-none absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400">
+                  <ChevronDown
+                    size={16}
+                    className={`transition-transform ${locationOpen ? 'rotate-180' : ''}`}
+                  />
+                </div>
+                {locationOpen && (
+                  <div className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg py-1">
+                    {CAMPUS_OPTIONS.map((campus) => (
+                      <button
+                        type="button"
+                        key={campus}
+                        onClick={() => {
+                          setLocation(campus);
+                          setLocationOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 ${location === campus ? 'text-blue-600 bg-blue-50' : 'text-slate-700'}`}
+                      >
+                        {campus}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -247,15 +325,26 @@ const Publish = () => {
 
             {/* Submit Actions */}
             <div className="pt-6 flex items-center gap-4">
-              <button type="button" className="flex-1 py-4 text-slate-600 font-medium hover:bg-slate-50 rounded-xl transition-colors">
-                保存草稿
+              <button
+                type="button"
+                className="flex-1 py-4 bg-slate-100 text-slate-700 font-medium hover:bg-slate-200 rounded-xl transition-colors flex items-center justify-center gap-2"
+              >
+                <Save size={18} />
+                <span>保存草稿</span>
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-[2] py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-500/30 transition-all transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="flex-[2] py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-500/30 transition-all transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {submitting ? '发布中...' : '立即发布'}
+                {submitting ? (
+                  '发布中...'
+                ) : (
+                  <>
+                    <Rocket size={18} />
+                    <span>立即发布</span>
+                  </>
+                )}
               </button>
             </div>
           </form>

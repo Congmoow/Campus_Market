@@ -91,6 +91,7 @@ public class ProductService {
         dto.setStatus(product.getStatus());
         dto.setLocation(product.getLocation());
         dto.setCreatedAt(product.getCreatedAt());
+        dto.setViewCount(product.getViewCount());
 
         if (product.getCategoryId() != null) {
             Optional<Category> categoryOpt = categoryRepository.findById(product.getCategoryId());
@@ -270,14 +271,28 @@ public class ProductService {
         productRepository.save(product);
     }
 
+    public void increaseViewCount(Long id) {
+        productRepository.findById(id).ifPresent(product -> {
+            Long current = product.getViewCount();
+            if (current == null) {
+                current = 0L;
+            }
+            product.setViewCount(current + 1);
+            product.setUpdatedAt(LocalDateTime.now());
+            productRepository.save(product);
+        });
+    }
+
     public ProductListItemDto toListItemDto(Product product) {
         ProductListItemDto dto = new ProductListItemDto();
         dto.setId(product.getId());
         dto.setTitle(product.getTitle());
+        dto.setDescription(product.getDescription());
         dto.setPrice(product.getPrice());
         dto.setLocation(product.getLocation());
         dto.setCreatedAt(product.getCreatedAt());
         dto.setStatus(product.getStatus());
+        dto.setViewCount(product.getViewCount());
 
         List<ProductImage> images = productImageRepository.findByProductIdOrderBySortOrderAsc(product.getId());
         if (!images.isEmpty()) {

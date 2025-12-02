@@ -10,11 +10,13 @@ public class ProductListItemDto {
 
     private Long id;
     private String title;
+    private String description;
     private BigDecimal price;
     private String thumbnail;
     private String location;
     private LocalDateTime createdAt;
     private String status;
+    private Long viewCount;
 
     private Long sellerId;
     private String sellerName;

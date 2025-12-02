@@ -35,8 +35,9 @@ export const invalidateFavoriteIdsCache = () => {
   favoriteIdsPromise = null;
 };
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, isSold = false }) => {
   const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteTip, setFavoriteTip] = useState('');
 
   useEffect(() => {
     let mounted = true;
@@ -65,10 +66,18 @@ const ProductCard = ({ product }) => {
         await favoriteApi.remove(product.id);
         if (favoriteIdsCache) favoriteIdsCache.delete(product.id);
       }
+      setFavoriteTip(next ? '已加入收藏' : '已取消收藏');
+      setTimeout(() => {
+        setFavoriteTip('');
+      }, 1500);
     } catch (err) {
       // 接口失败时回滚本地状态，避免与实际不一致
       console.error('收藏操作失败', err);
       setIsFavorite(!next);
+      setFavoriteTip('收藏操作失败，请稍后重试');
+      setTimeout(() => {
+        setFavoriteTip('');
+      }, 2000);
     }
   };
   return (
@@ -84,8 +93,16 @@ const ProductCard = ({ product }) => {
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          
-          <div className="absolute top-3 right-3">
+          {isSold && (
+            <div className="absolute inset-0 pointer-events-none">
+              <img
+                src="/images/sold-out.jpg"
+                alt="已售出"
+                className="w-full h-full object-cover opacity-90"
+              />
+            </div>
+          )}
+          <div className="absolute top-3 right-3 flex flex-col items-end gap-1">
             <button 
               className={`p-2 bg-white/80 backdrop-blur-md rounded-full hover:bg-white transition-all shadow-sm hover:shadow-md transform hover:scale-110 ${
                 isFavorite ? 'text-rose-500' : 'text-slate-600 hover:text-red-500'
@@ -94,6 +111,11 @@ const ProductCard = ({ product }) => {
             >
               <Heart size={18} className={isFavorite ? 'fill-rose-500' : ''} />
             </button>
+            {favoriteTip && (
+              <div className="px-3 py-1 rounded-full bg-slate-900/90 text-white text-xs shadow-lg whitespace-nowrap">
+                {favoriteTip}
+              </div>
+            )}
           </div>
           
           <div className="absolute bottom-3 left-3">

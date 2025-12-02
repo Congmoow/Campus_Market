@@ -212,7 +212,7 @@ const Navbar = () => {
                     handleSearchSubmit();
                   }
                 }}
-                className="block w-full pl-10 pr-3 py-2.5 border-none rounded-full bg-slate-100/50 focus:bg-white ring-1 ring-transparent focus:ring-blue-500/20 focus:shadow-lg transition-all duration-300 text-sm placeholder:text-slate-400"
+                className="block w-full pl-10 pr-3 py-2.5 border-none rounded-full bg-slate-100/50 focus:bg-white ring-1 ring-transparent focus:outline-none focus:ring-blue-500/20 focus:shadow-lg transition-all duration-300 text-sm placeholder:text-slate-400"
               />
             </div>
 
@@ -476,7 +476,7 @@ const Navbar = () => {
                     setIsMobileMenuOpen(false);
                   }
                 }}
-                className="w-full px-4 py-3 rounded-xl bg-slate-100 border-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full px-4 py-3 rounded-xl bg-slate-100 border-none focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
               <Link to="/publish" className="w-full">
                 <button className="w-full py-3 bg-blue-600 text-white rounded-xl font-medium shadow-lg shadow-blue-500/30">

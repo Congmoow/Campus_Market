@@ -1,8 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Upload, Trash2, Save, Loader2 } from 'lucide-react';
+import { X, Upload, Trash2, Save, Loader2, ChevronDown } from 'lucide-react';
 import { fileApi } from '../api';
+
+const CAMPUS_OPTIONS = ['下沙校区', '南浔校区'];
+const CATEGORY_OPTIONS = [
+  '数码产品',
+  '书籍教材',
+  '生活用品',
+  '衣物鞋帽',
+  '美妆护肤',
+  '运动器材',
+  '其他',
+];
 
 const EditProductModal = ({ isOpen, onClose, product, categories, onSave }) => {
   const [formData, setFormData] = useState({
@@ -10,7 +21,7 @@ const EditProductModal = ({ isOpen, onClose, product, categories, onSave }) => {
     description: '',
     price: '',
     originalPrice: '',
-    categoryId: '',
+    categoryName: '',
     location: '',
     images: []
   });
@@ -19,21 +30,44 @@ const EditProductModal = ({ isOpen, onClose, product, categories, onSave }) => {
   const [newImageUrl, setNewImageUrl] = useState('');
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
+  const campusDropdownRef = useRef(null);
+  const categoryDropdownRef = useRef(null);
+  const [campusOpen, setCampusOpen] = useState(false);
+  const [categoryOpen, setCategoryOpen] = useState(false);
 
   useEffect(() => {
     if (product && isOpen) {
+      const initLocation = product.location && CAMPUS_OPTIONS.includes(product.location)
+        ? product.location
+        : '';
       setFormData({
         title: product.title || '',
         description: product.description || '',
         price: product.price || '',
         originalPrice: product.originalPrice || '',
-        categoryId: product.categoryId || '',
-        location: product.location || '',
+        categoryName: product.categoryName || '',
+        location: initLocation,
         images: product.images || []
       });
       setImageUrls(product.images || []);
     }
   }, [product, isOpen]);
+
+  useEffect(() => {
+    if (!campusOpen && !categoryOpen) return;
+    const handleClickOutside = (event) => {
+      if (campusDropdownRef.current && !campusDropdownRef.current.contains(event.target)) {
+        setCampusOpen(false);
+      }
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target)) {
+        setCategoryOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [campusOpen, categoryOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,14 +79,21 @@ const EditProductModal = ({ isOpen, onClose, product, categories, onSave }) => {
       alert('请输入有效的价格');
       return;
     }
+    if (!formData.location) {
+      alert('请选择发布地点');
+      return;
+    }
 
     setLoading(true);
     try {
       await onSave({
-        ...formData,
+        title: formData.title,
+        description: formData.description,
         price: parseFloat(formData.price),
         originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
-        imageUrls: imageUrls
+        categoryName: formData.categoryName || null,
+        location: formData.location,
+        imageUrls: imageUrls,
       });
       onClose();
     } catch (error) {
@@ -126,10 +167,10 @@ const EditProductModal = ({ isOpen, onClose, product, categories, onSave }) => {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="w-full max-w-3xl max-h-[85vh] bg-white rounded-2xl shadow-2xl overflow-hidden pointer-events-auto"
+              className="w-full max-w-3xl max-h-[85vh] bg-white rounded-2xl shadow-2xl overflow-hidden pointer-events-auto flex flex-col"
             >
             {/* Header */}
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div className="flex-shrink-0 px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50">
               <h2 className="text-xl font-bold text-slate-900">编辑商品信息</h2>
               <button
                 onClick={onClose}
@@ -140,7 +181,7 @@ const EditProductModal = ({ isOpen, onClose, product, categories, onSave }) => {
             </div>
 
             {/* Content */}
-            <div className="p-6 overflow-y-auto max-h-[calc(85vh-8rem)]">
+            <div className="flex-1 min-h-0 overflow-y-auto p-6">
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* 基本信息 */}
                 <div>
@@ -157,7 +198,7 @@ const EditProductModal = ({ isOpen, onClose, product, categories, onSave }) => {
                         type="text"
                         value={formData.title}
                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                         placeholder="请输入商品标题"
                         maxLength={100}
                       />
@@ -170,7 +211,7 @@ const EditProductModal = ({ isOpen, onClose, product, categories, onSave }) => {
                       <textarea
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none"
+                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none"
                         rows={4}
                         placeholder="详细描述你的商品..."
                         maxLength={500}
@@ -199,7 +240,7 @@ const EditProductModal = ({ isOpen, onClose, product, categories, onSave }) => {
                           type="number"
                           value={formData.price}
                           onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                          className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                          className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                           placeholder="0.00"
                           min="0"
                           step="0.01"
@@ -217,7 +258,7 @@ const EditProductModal = ({ isOpen, onClose, product, categories, onSave }) => {
                           type="number"
                           value={formData.originalPrice}
                           onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
-                          className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                          className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                           placeholder="0.00"
                           min="0"
                           step="0.01"
@@ -233,20 +274,92 @@ const EditProductModal = ({ isOpen, onClose, product, categories, onSave }) => {
                     <span className="w-1 h-4 bg-purple-500 rounded-full"></span>
                     其他信息
                   </h3>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                      商品分类
-                    </label>
-                    <select
-                      value={formData.categoryId}
-                      onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                    >
-                      <option value="">选择分类</option>
-                      {categories.map(cat => (
-                        <option key={cat.id} value={cat.id}>{cat.name}</option>
-                      ))}
-                    </select>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">
+                        商品分类
+                      </label>
+                      <div
+                        className="relative"
+                        ref={categoryDropdownRef}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => setCategoryOpen((open) => !open)}
+                          className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-left flex items-center justify-between gap-2 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                        >
+                          <span className={formData.categoryName ? 'text-slate-900' : 'text-slate-400'}>
+                            {formData.categoryName || '选择分类'}
+                          </span>
+                          <ChevronDown
+                            size={16}
+                            className={`text-slate-400 transition-transform ${categoryOpen ? 'rotate-180' : ''}`}
+                          />
+                        </button>
+                        {categoryOpen && (
+                          <div className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg py-1 max-h-56 overflow-auto">
+                            {CATEGORY_OPTIONS.map((name) => (
+                              <button
+                                type="button"
+                                key={name}
+                                onClick={() => {
+                                  setFormData((prev) => ({ ...prev, categoryName: name }));
+                                  setCategoryOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-50 ${
+                                  formData.categoryName === name ? 'text-blue-600 bg-blue-50' : 'text-slate-700'
+                                }`}
+                              >
+                                {name}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">
+                        发布地点 <span className="text-red-500">*</span>
+                      </label>
+                      <div
+                        className="relative"
+                        ref={campusDropdownRef}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => setCampusOpen((open) => !open)}
+                          className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-left flex items-center justify-between gap-2 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                        >
+                          <span className={formData.location ? 'text-slate-900' : 'text-slate-400'}>
+                            {formData.location || '请选择校区'}
+                          </span>
+                          <ChevronDown
+                            size={16}
+                            className={`text-slate-400 transition-transform ${campusOpen ? 'rotate-180' : ''}`}
+                          />
+                        </button>
+                        {campusOpen && (
+                          <div className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg py-1">
+                            {CAMPUS_OPTIONS.map((campus) => (
+                              <button
+                                type="button"
+                                key={campus}
+                                onClick={() => {
+                                  setFormData((prev) => ({ ...prev, location: campus }));
+                                  setCampusOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-50 ${
+                                  formData.location === campus ? 'text-blue-600 bg-blue-50' : 'text-slate-700'
+                                }`}
+                              >
+                                {campus}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -317,7 +430,7 @@ const EditProductModal = ({ isOpen, onClose, product, categories, onSave }) => {
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
+            <div className="flex-shrink-0 px-6 pt-4 pb-4 border-t border-slate-100 flex items-center justify-end gap-3 bg-slate-50">
               <button
                 type="button"
                 onClick={onClose}
@@ -344,6 +457,9 @@ const EditProductModal = ({ isOpen, onClose, product, categories, onSave }) => {
                 )}
               </button>
             </div>
+
+            {/* 底部留白区域 - 让 Footer 和弹窗圆角之间有空隙 */}
+            <div className="flex-shrink-0 h-3 bg-slate-50 rounded-b-2xl"></div>
             </motion.div>
           </div>
         </>

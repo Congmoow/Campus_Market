@@ -20,6 +20,7 @@ public class ProductDto {
     private String location;
     private LocalDateTime createdAt;
     private List<String> images;
+    private Long viewCount;
 
     private Long sellerId;
     private String sellerName;

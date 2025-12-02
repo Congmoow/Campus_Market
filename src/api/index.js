@@ -10,6 +10,7 @@ export const productApi = {
   getLatest: () => request.get('/products/latest'),
   getList: (params) => request.get('/products', { params }),
   getDetail: (id) => request.get(`/products/${id}`),
+  increaseView: (id) => request.post(`/products/${id}/view`),
   create: (data) => request.post('/products', data),
   update: (id, data) => request.put(`/products/${id}`, data),
   delete: (id) => request.delete(`/products/${id}`),

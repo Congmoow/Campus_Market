@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { MapPin, Clock, Heart, Share2, MessageCircle, ShieldCheck } from 'lucide-react';
+import { MapPin, Clock, Heart, Share2, MessageCircle, ShieldCheck, ShoppingBag } from 'lucide-react';
 import { productApi, chatApi, favoriteApi } from '../api';
 import { invalidateFavoriteIdsCache } from '../components/ProductCard';
 
@@ -25,6 +25,7 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteTip, setFavoriteTip] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -73,6 +74,17 @@ const ProductDetail = () => {
     }
   }, [id]);
 
+  useEffect(() => {
+    if (!id) return;
+    (async () => {
+      try {
+        await productApi.increaseView(id);
+      } catch (e) {
+        // 浏览量增加失败不影响主流程，静默忽略
+      }
+    })();
+  }, [id]);
+
   // 根据当前用户收藏列表初始化详情页爱心状态
   useEffect(() => {
     let cancelled = false;
@@ -106,9 +118,17 @@ const ProductDetail = () => {
         await favoriteApi.remove(product.id);
       }
       invalidateFavoriteIdsCache();
+      setFavoriteTip(next ? '已加入收藏' : '已取消收藏');
+      setTimeout(() => {
+        setFavoriteTip('');
+      }, 1500);
     } catch (e) {
       console.error('收藏操作失败', e);
       setIsFavorite(!next);
+      setFavoriteTip('收藏操作失败，请稍后重试');
+      setTimeout(() => {
+        setFavoriteTip('');
+      }, 2000);
     }
   };
 
@@ -148,20 +168,27 @@ const ProductDetail = () => {
             <div>
               <div className="flex items-start justify-between mb-4">
                  <h1 className="text-3xl font-bold text-slate-900 leading-tight">{product.title}</h1>
-                 <div className="flex gap-2">
+                 <div className="flex gap-2 items-center">
                     <button className="p-2.5 rounded-full bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
                         <Share2 size={20} />
                     </button>
-                    <button
-                      className={`p-2.5 rounded-full bg-slate-100 transition-colors ${
-                        isFavorite
-                          ? 'text-rose-500 bg-rose-50 hover:bg-rose-100'
-                          : 'text-slate-600 hover:bg-red-50 hover:text-red-500'
-                      }`}
-                      onClick={handleToggleFavorite}
-                    >
+                    <div className="relative">
+                      <button
+                        className={`p-2.5 rounded-full bg-slate-100 transition-colors ${
+                          isFavorite
+                            ? 'text-rose-500 bg-rose-50 hover:bg-rose-100'
+                            : 'text-slate-600 hover:bg-red-50 hover:text-red-500'
+                        }`}
+                        onClick={handleToggleFavorite}
+                      >
                         <Heart size={20} className={isFavorite ? 'fill-rose-500' : ''} />
-                    </button>
+                      </button>
+                      {favoriteTip && (
+                        <div className="absolute right-0 mt-2 px-3 py-1 rounded-full bg-slate-900/90 text-white text-xs shadow-lg whitespace-nowrap">
+                          {favoriteTip}
+                        </div>
+                      )}
+                    </div>
                  </div>
               </div>
               
@@ -212,8 +239,9 @@ const ProductDetail = () => {
             {/* Actions */}
             <div className="flex gap-4 pt-4 sticky bottom-0 bg-slate-50/80 backdrop-blur-md p-4 -mx-4 lg:static lg:p-0 lg:bg-transparent lg:mx-0">
                 <Link to={`/checkout/${product.id}`} className="flex-1">
-                    <button className="w-full py-4 bg-blue-600 text-white rounded-full font-bold text-lg shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:scale-[1.02] transition-all active:scale-95">
-                        拍下
+                    <button className="w-full py-4 bg-blue-600 text-white rounded-full font-bold text-lg shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2">
+                        <ShoppingBag size={22} />
+                        <span>拍下</span>
                     </button>
                 </Link>
                 <div className="flex-1">

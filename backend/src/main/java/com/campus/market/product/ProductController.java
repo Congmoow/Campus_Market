@@ -48,6 +48,12 @@ public class ProductController {
         return ApiResponse.ok(productService.getDetail(id));
     }
 
+    @PostMapping("/products/{id}/view")
+    public ApiResponse<Void> increaseView(@PathVariable Long id) {
+        productService.increaseViewCount(id);
+        return ApiResponse.ok(null);
+    }
+
     @PostMapping("/products")
     public ApiResponse<ProductDto> create(@RequestBody CreateProductRequest request,
                                           java.security.Principal principal) {

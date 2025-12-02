@@ -43,6 +43,9 @@ public class Product {
     @Column(length = 100)
     private String location;
 
+    @Column(name = "view_count", nullable = false)
+    private Long viewCount = 0L;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -54,6 +57,9 @@ public class Product {
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = now;
         this.updatedAt = now;
+        if (this.viewCount == null) {
+            this.viewCount = 0L;
+        }
     }
 
     @PreUpdate
