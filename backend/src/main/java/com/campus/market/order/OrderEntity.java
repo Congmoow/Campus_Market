@@ -1,5 +1,8 @@
 package com.campus.market.order;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,6 +13,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "orders")
+@TableName("orders")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,6 +21,7 @@ public class OrderEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     @Column(name = "buyer_id", nullable = false)

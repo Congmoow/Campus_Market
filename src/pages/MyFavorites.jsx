@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, MapPin, User, ArrowRight, Trash2, ShoppingCart } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { favoriteApi } from '../api';
 import { invalidateFavoriteIdsCache } from '../components/ProductCard';
 
 const MyFavorites = () => {
+  const navigate = useNavigate();
   const [favorites, setFavorites] = useState([]);
   const [hoveredId, setHoveredId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -110,7 +111,8 @@ const MyFavorites = () => {
                   exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
                   onMouseEnter={() => setHoveredId(item.id)}
                   onMouseLeave={() => setHoveredId(null)}
-                  className="group relative bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-500"
+                  onClick={() => navigate(`/product/${item.id}`)}
+                  className="group relative bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-500 cursor-pointer"
                 >
                   {/* Image Area */}
                   <div className="relative aspect-[4/3] overflow-hidden">
@@ -124,7 +126,7 @@ const MyFavorites = () => {
                     {/* Floating Action Button - Remove */}
                     <button 
                       onClick={(e) => {
-                        e.preventDefault();
+                        e.stopPropagation();
                         handleRemove(item.id);
                       }}
                       className="absolute top-3 right-3 p-2.5 bg-white/90 backdrop-blur-md rounded-full text-rose-500 shadow-lg hover:bg-rose-500 hover:text-white transition-all duration-300 z-20"
@@ -133,14 +135,7 @@ const MyFavorites = () => {
                       <Trash2 size={16} />
                     </button>
 
-                    {/* Overlay Content */}
-                    <div className="absolute bottom-0 left-0 right-0 p-5 translate-y-6 group-hover:translate-y-0 transition-transform duration-300">
-                      <Link to={`/product/${item.id}`}>
-                        <button className="w-full py-3 bg-white/95 backdrop-blur-md text-slate-900 rounded-xl font-bold shadow-xl hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-2">
-                          去看看 <ArrowRight size={16} />
-                        </button>
-                      </Link>
-                    </div>
+                    {/* Overlay CTA 已移除，改为整卡片可点击跳转 */}
                   </div>
 
                   {/* Info Content */}

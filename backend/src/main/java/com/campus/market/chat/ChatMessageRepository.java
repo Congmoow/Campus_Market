@@ -1,16 +1,44 @@
 package com.campus.market.chat;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
+@Mapper
+public interface ChatMessageRepository extends BaseMapper<ChatMessage> {
 
-    Page<ChatMessage> findBySessionIdOrderByCreatedAtAsc(Long sessionId, Pageable pageable);
+    default Optional<ChatMessage> findById(Long id) {
+        return Optional.ofNullable(selectById(id));
+    }
 
-    List<ChatMessage> findBySessionIdOrderByCreatedAtAsc(Long sessionId);
+    default List<ChatMessage> findBySessionIdOrderByCreatedAtAsc(Long sessionId) {
+        if (sessionId == null) {
+            return List.of();
+        }
+        LambdaQueryWrapper<ChatMessage> wrapper = Wrappers.lambdaQuery(ChatMessage.class)
+                .eq(ChatMessage::getSessionId, sessionId)
+                .orderByAsc(ChatMessage::getCreatedAt, ChatMessage::getId);
+        return selectList(wrapper);
+    }
 
-    long countBySessionIdAndSenderIdNotAndReadFalse(Long sessionId, Long senderId);
+    default long countBySessionIdAndSenderIdNotAndReadFalse(Long sessionId, Long senderId) {
+        if (sessionId == null) {
+            return 0L;
+        }
+        LambdaQueryWrapper<ChatMessage> wrapper = Wrappers.lambdaQuery(ChatMessage.class)
+                .eq(ChatMessage::getSessionId, sessionId)
+                .eq(ChatMessage::getRead, false);
+        if (senderId != null) {
+            wrapper.ne(ChatMessage::getSenderId, senderId);
+        }
+        return selectCount(wrapper);
+    }
+
+    default int update(ChatMessage message) {
+        return updateById(message);
+    }
 }

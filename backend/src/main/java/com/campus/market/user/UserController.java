@@ -52,14 +52,16 @@ public class UserController {
         }
         User user = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new BusinessException("用户不存在"));
-        
+
         UserProfile profile = userProfileRepository.findByUserId(user.getId()).orElse(null);
+        boolean isNew = false;
         if (profile == null) {
             profile = new UserProfile();
             profile.setUserId(user.getId());
             profile.setNickname(user.getUsername());
+            isNew = true;
         }
-        
+
         if (request.getNickname() != null && !request.getNickname().isBlank()) {
             profile.setNickname(request.getNickname());
         }
@@ -78,8 +80,15 @@ public class UserController {
         if (request.getBio() != null) {
             profile.setBio(request.getBio());
         }
-        
-        userProfileRepository.save(profile);
+
+        if (isNew) {
+            profile.prePersist();
+            userProfileRepository.insert(profile);
+        } else {
+            profile.preUpdate();
+            userProfileRepository.update(profile);
+        }
+
         return ApiResponse.ok(buildProfileDto(user));
     }
 

@@ -30,6 +30,7 @@ export const orderApi = {
   getDetail: (id) => request.get(`/orders/${id}`),
   getMyOrders: (role, status) => request.get('/orders/me', { params: { role, status } }),
   confirm: (id) => request.post(`/orders/${id}/confirm`),
+  ship: (id) => request.post(`/orders/${id}/ship`),
 };
 
 export const chatApi = {
@@ -42,9 +43,15 @@ export const chatApi = {
 };
 
 export const fileApi = {
-  uploadImage: (file) => {
+  /**
+   * 上传图片
+   * @param {File} file 文件
+   * @param {string} type 类型: avatars(头像), products(商品图片), chat(聊天图片)
+   */
+  uploadImage: (file, type = 'products') => {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('type', type);
     return request.post('/files/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',

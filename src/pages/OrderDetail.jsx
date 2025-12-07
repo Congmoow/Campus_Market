@@ -2,6 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { motion, AnimatePresence } from 'framer-motion';
+import LazyLottie from '../components/LazyLottie';
+import deliveryTruckAnimation from '../assets/Delivery-truck.json';
+import foodDeliveredAnimation from '../assets/Food-delivered.json';
+import packageOpeningAnimation from '../assets/package-opening.json';
 import { 
   ChevronLeft, 
   Package, 
@@ -25,6 +29,7 @@ const OrderDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [confirmLoading, setConfirmLoading] = useState(false);
+  const [shipLoading, setShipLoading] = useState(false);
 
   useEffect(() => {
     const loadOrder = async () => {
@@ -66,6 +71,24 @@ const OrderDetail = () => {
     }
   };
 
+  const handleShip = async () => {
+    if (!order) return;
+    try {
+      setShipLoading(true);
+      const res = await orderApi.ship(order.id);
+      if (res.success && res.data) {
+        setOrder(prev => ({ ...prev, status: res.data.status }));
+      } else {
+        alert(res.message || '发货失败');
+      }
+    } catch (e) {
+      console.error('发货失败', e);
+      alert('发货失败，请稍后重试');
+    } finally {
+      setShipLoading(false);
+    }
+  };
+
   const handleConfirmReceipt = async () => {
     if (!order) return;
     try {
@@ -95,6 +118,16 @@ const OrderDetail = () => {
           border: 'border-orange-100',
           icon: Clock,
           progress: 1
+        };
+      case 'SHIPPED':
+        return {
+          label: '交易中',
+          desc: '卖家已发货，请注意查收',
+          color: 'text-blue-600',
+          bg: 'bg-blue-50',
+          border: 'border-blue-100',
+          icon: Truck,
+          progress: 2,
         };
       case 'DONE':
         return { 
@@ -242,6 +275,35 @@ const OrderDetail = () => {
                 </div>
                 <p className="text-slate-600 opacity-80 font-medium ml-11">{statusCfg.desc}</p>
                 
+                {/* 状态动画 - 绝对定位在右下角 */}
+                {order.status === 'PENDING' && (
+                  <div className="absolute -right-8 bottom-8 pointer-events-none">
+                    <LazyLottie
+                      animationData={packageOpeningAnimation}
+                      loop={true}
+                      style={{ width: 230, height: 150 }}
+                    />
+                  </div>
+                )}
+                {order.status === 'SHIPPED' && (
+                  <div className="absolute -right-8 bottom-12 pointer-events-none">
+                    <LazyLottie
+                      animationData={deliveryTruckAnimation}
+                      loop={true}
+                      style={{ width: 280, height: 200 }}
+                    />
+                  </div>
+                )}
+                {order.status === 'DONE' && (
+                  <div className="absolute -right-8 bottom-12 pointer-events-none">
+                    <LazyLottie
+                      animationData={foodDeliveredAnimation}
+                      loop={true}
+                      style={{ width: 280, height: 200 }}
+                    />
+                  </div>
+                )}
+                
                 {/* Progress Steps (Simplified) */}
                 <div className="mt-8 ml-2 flex items-center gap-2 relative">
                   {[1, 2, 3].map((step, idx) => {
@@ -329,7 +391,7 @@ const OrderDetail = () => {
           </div>
 
           {/* Sidebar - Right Column */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-1 flex flex-col space-y-6">
             {/* Counterparty Card */}
             <motion.div 
               variants={itemVariants}
@@ -370,14 +432,15 @@ const OrderDetail = () => {
             {/* Actions Card */}
             <motion.div 
               variants={itemVariants}
-              className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 sticky top-24"
+              className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 sticky top-24 flex-1 flex flex-col"
             >
-              <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <h3 className="font-bold text-slate-900 mb-6 flex items-center gap-2">
                 <span className="w-1 h-5 bg-blue-600 rounded-full" />
                 订单操作
               </h3>
               <div className="space-y-3">
-                {order.status === 'PENDING' && (
+                {/* 买家：确认收货（仅卖家发货后才能确认） */}
+                {isBuyer && order.status === 'SHIPPED' && (
                   <button 
                     onClick={handleConfirmReceipt}
                     disabled={confirmLoading}
@@ -391,6 +454,22 @@ const OrderDetail = () => {
                     确认收货
                   </button>
                 )}
+
+                {/* 卖家：发货 */}
+                {!isBuyer && order.status === 'PENDING' && (
+                  <button
+                    onClick={handleShip}
+                    disabled={shipLoading}
+                    className="w-full py-3.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {shipLoading ? (
+                      <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Truck size={18} />
+                    )}
+                    发货
+                  </button>
+                )}
                 
                 <button className="w-full py-3.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl font-medium transition-colors flex items-center justify-center gap-2">
                   <AlertCircle size={18} />
@@ -398,7 +477,7 @@ const OrderDetail = () => {
                 </button>
               </div>
               
-              <div className="mt-6 pt-6 border-t border-slate-50">
+              <div className="mt-8 pt-6 border-t border-slate-50 flex-1 flex items-center justify-center">
                 <p className="text-xs text-slate-400 leading-relaxed text-center">
                   如遇交易纠纷，请及时联系客服介入处理。
                   <br />

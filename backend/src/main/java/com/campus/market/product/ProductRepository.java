@@ -1,22 +1,27 @@
 package com.campus.market.product;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
-public interface ProductRepository extends JpaRepository<Product, Long> {
+@Mapper
+public interface ProductRepository extends BaseMapper<Product> {
 
-    Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
+    default Optional<Product> findById(Long id) {
+        return Optional.ofNullable(selectById(id));
+    }
 
-    Page<Product> findByTitleContainingIgnoreCase(String keyword, Pageable pageable);
+    default List<Product> findAllById(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return selectBatchIds(ids);
+    }
 
-    Page<Product> findByCategoryIdAndTitleContainingIgnoreCase(Long categoryId, String keyword, Pageable pageable);
-
-    List<Product> findTop8ByStatusOrderByCreatedAtDesc(String status);
-
-    Page<Product> findBySellerId(Long sellerId, Pageable pageable);
-
-    Page<Product> findBySellerIdAndStatus(Long sellerId, String status, Pageable pageable);
+    default int update(Product product) {
+        return updateById(product);
+    }
 }

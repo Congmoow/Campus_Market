@@ -140,9 +140,9 @@ const OrderSuccess = () => {
             联系卖家
           </button>
           
-          <Link to="/my-orders" className="block w-full">
+          <Link to={orderId ? `/order/${orderId}` : '/my-orders'} className="block w-full">
             <button className="w-full py-4 bg-white hover:bg-slate-50 text-slate-700 rounded-2xl font-bold border border-slate-200 transition-all flex items-center justify-center gap-2">
-              查看我的订单
+              查看订单详情
               <ArrowRight size={20} />
             </button>
           </Link>

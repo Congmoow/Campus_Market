@@ -113,8 +113,12 @@ const Home = () => {
               <h2 className="text-3xl font-bold text-slate-900 mb-2">最新发布</h2>
               <p className="text-slate-500">看看同学们刚刚发布了什么好东西</p>
             </div>
-            <Link to="/market" className="hidden sm:flex items-center gap-1 text-blue-600 font-medium hover:text-blue-700 transition-colors group">
-              查看全部 <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+            <Link 
+              to="/market" 
+              className="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-full shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-105 transition-all duration-300 group"
+            >
+              查看全部 
+              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
           
@@ -135,8 +139,12 @@ const Home = () => {
           </div>
           
           <div className="mt-12 text-center sm:hidden">
-            <Link to="/market" className="inline-flex items-center gap-2 text-blue-600 font-medium">
-              查看全部 <ArrowRight size={18} />
+            <Link 
+              to="/market" 
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-full shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all"
+            >
+              查看全部 
+              <ArrowRight size={18} />
             </Link>
           </div>
         </div>

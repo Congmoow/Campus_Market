@@ -57,12 +57,14 @@ public class AuthController {
         user.setPhone(request.getPhone());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setRole("USER");
-        user = userRepository.save(user);
+        user.prePersist();
+        userRepository.insert(user);
 
         UserProfile profile = new UserProfile();
         profile.setUserId(user.getId());
         profile.setNickname(request.getNickname());
-        userProfileRepository.save(profile);
+        profile.prePersist();
+        userProfileRepository.insert(profile);
 
         String token = jwtTokenProvider.createToken(user.getId(), user.getUsername(), user.getRole());
         AuthResponse resp = new AuthResponse(token, user.getId(), user.getUsername(), profile.getNickname());

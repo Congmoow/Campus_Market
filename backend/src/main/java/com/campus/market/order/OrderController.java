@@ -71,4 +71,14 @@ public class OrderController {
         User user = requireUser(principal);
         return ApiResponse.ok(orderService.confirmReceive(user.getId(), id));
     }
+
+    /**
+     * 卖家发货。
+     */
+    @PostMapping("/orders/{id}/ship")
+    public ApiResponse<OrderDto> ship(@PathVariable Long id,
+                                      Principal principal) {
+        User user = requireUser(principal);
+        return ApiResponse.ok(orderService.shipOrder(user.getId(), id));
+    }
 }

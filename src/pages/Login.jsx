@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Lock, Mail, ArrowRight, School, ShieldCheck } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import LazyLottie from '../components/LazyLottie';
+import studentAnimation from '../assets/student-animation.json';
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -21,35 +23,65 @@ const Login = () => {
 
       <div className="w-full max-w-4xl bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative z-10 border border-white/50">
         
-        {/* Left Side - Branding */}
-        <div className="md:w-1/2 bg-gradient-to-br from-blue-600 to-cyan-500 p-12 text-white flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=800')] bg-cover bg-center opacity-10 mix-blend-overlay"></div>
+        {/* Left Side - Branding with Animation */}
+        <div className="md:w-1/2 bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-400 p-8 md:p-10 text-white flex flex-col relative overflow-hidden min-h-[500px]">
+          {/* 装饰背景 */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/3 -translate-x-1/3"></div>
           
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 text-2xl font-bold mb-2">
-              <School size={32} />
-              校园集市
-            </div>
-            <p className="text-blue-100">连接每一位同学的闲置好物</p>
+          {/* Logo */}
+          <div className="relative z-10 flex items-center gap-2 text-xl font-bold">
+            <School size={28} />
+            校园集市
           </div>
 
-          <div className="relative z-10 space-y-6">
-            <h2 className="text-3xl font-bold leading-tight">
-              {isLogin ? "欢迎回来，\n同学！" : "加入我们，\n开启交易之旅"}
-            </h2>
-            <p className="text-blue-100 text-sm leading-relaxed max-w-xs">
+          {/* Lottie 动画区域 - 居中展示 */}
+          <div className="relative z-10 flex-1 flex items-center justify-center py-4">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className="w-full max-w-[340px]"
+            >
+              <LazyLottie 
+                animationData={studentAnimation} 
+                loop={true}
+                className="w-full h-auto drop-shadow-2xl"
+              />
+            </motion.div>
+          </div>
+
+          {/* 文字内容区域 */}
+          <div className="relative z-10 space-y-3">
+            <motion.h2 
+              key={isLogin ? "login-title" : "register-title"}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="text-2xl md:text-3xl font-bold leading-tight"
+            >
+              {isLogin ? "欢迎回来，同学！" : "加入我们"}
+            </motion.h2>
+            <motion.p 
+              key={isLogin ? "login-desc" : "register-desc"}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+              className="text-blue-100 text-sm leading-relaxed"
+            >
               {isLogin 
-                ? "登录你的校园账号，查看最新的闲置物品，管理你的发布和订单。" 
-                : "只需一分钟完成学号认证，即可在校内安全交易，享受便捷生活。"}
-            </p>
-          </div>
-
-          <div className="relative z-10 flex gap-2 text-xs text-blue-200 mt-8">
-            <div className="flex items-center gap-1 bg-white/10 px-3 py-1 rounded-full backdrop-blur-sm">
-              <ShieldCheck size={12} /> 实名认证
-            </div>
-            <div className="flex items-center gap-1 bg-white/10 px-3 py-1 rounded-full backdrop-blur-sm">
-              <School size={12} /> 仅限本校
+                ? "登录你的校园账号，发现闲置好物" 
+                : "一分钟完成认证，开启交易之旅"}
+            </motion.p>
+            
+            {/* 标签 */}
+            <div className="flex gap-2 text-xs text-blue-100 pt-2">
+              <div className="flex items-center gap-1 bg-white/15 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                <ShieldCheck size={12} /> 实名认证
+              </div>
+              <div className="flex items-center gap-1 bg-white/15 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                <School size={12} /> 仅限本校
+              </div>
             </div>
           </div>
         </div>

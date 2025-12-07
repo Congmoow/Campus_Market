@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "dev:server": "cd backend && mvnw.cmd spring-boot:run",
-    "dev:all": "concurrently \"npm run dev\" \"npm run dev:server\"",
+    "dev:all": "concurrently -n \"后端,前端\" -c \"yellow,cyan\" \"npm run dev:server\" \"npm run dev:delay\"",
+    "dev:delay": "node -e \"setTimeout(() => require('child_process').spawn('npm', ['run', 'dev'], {stdio: 'inherit', shell: true}), 8000)\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -15,6 +16,7 @@
     "axios": "^1.13.2",
     "clsx": "^2.1.0",
     "framer-motion": "^11.0.8",
+    "lottie-react": "^2.4.1",
     "lucide-react": "^0.344.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

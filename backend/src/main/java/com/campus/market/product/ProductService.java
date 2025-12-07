@@ -1,5 +1,6 @@
 package com.campus.market.product;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.campus.market.common.exception.BusinessException;
 import com.campus.market.product.dto.CategoryDto;
 import com.campus.market.product.dto.CreateProductRequest;
@@ -9,6 +10,7 @@ import com.campus.market.product.dto.UpdateProductRequest;
 import com.campus.market.user.UserProfile;
 import com.campus.market.user.UserProfileRepository;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -42,39 +44,61 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public List<ProductListItemDto> getLatest(int limit) {
-        List<Product> products = productRepository.findTop8ByStatusOrderByCreatedAtDesc("ON_SALE");
-        if (limit < products.size()) {
-            products = products.subList(0, limit);
-        }
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<Product> page =
+                new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(1, limit, false);
+
+        QueryWrapper<Product> wrapper = new QueryWrapper<>();
+        wrapper.eq("status", "ON_SALE")
+                .orderByDesc("created_at");
+
+        List<Product> products = productRepository.selectPage(page, wrapper).getRecords();
         return products.stream().map(this::toListItemDto).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public Page<ProductListItemDto> list(Long categoryId, String keyword, String sort, int page, int size) {
-        Pageable pageable;
+        String sortBy;
+        String sortDir;
         if ("priceAsc".equalsIgnoreCase(sort)) {
-            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "price"));
+            sortBy = "price";
+            sortDir = "ASC";
         } else if ("priceDesc".equalsIgnoreCase(sort)) {
-            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "price"));
+            sortBy = "price";
+            sortDir = "DESC";
         } else {
-            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+            sortBy = "createdAt";
+            sortDir = "DESC";
         }
 
-        Page<Product> productPage;
-        boolean hasCategory = categoryId != null && categoryId > 0;
-        boolean hasKeyword = keyword != null && !keyword.isBlank();
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<Product> mpPage =
+                new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(page + 1L, size);
+        QueryWrapper<Product> wrapper = new QueryWrapper<>();
 
-        if (hasCategory && hasKeyword) {
-            productPage = productRepository.findByCategoryIdAndTitleContainingIgnoreCase(categoryId, keyword, pageable);
-        } else if (hasCategory) {
-            productPage = productRepository.findByCategoryId(categoryId, pageable);
-        } else if (hasKeyword) {
-            productPage = productRepository.findByTitleContainingIgnoreCase(keyword, pageable);
-        } else {
-            productPage = productRepository.findAll(pageable);
+        if (categoryId != null) {
+            wrapper.eq("category_id", categoryId);
+        }
+        if (keyword != null && !keyword.isBlank()) {
+            wrapper.apply("LOWER(title) LIKE '%' || LOWER({0}) || '%'", keyword);
         }
 
-        return productPage.map(this::toListItemDto);
+        if ("price".equals(sortBy)) {
+            wrapper.orderBy(true, "ASC".equalsIgnoreCase(sortDir), "price");
+        } else {
+            wrapper.orderBy(true, "ASC".equalsIgnoreCase(sortDir), "created_at");
+        }
+
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<Product> resultPage =
+                productRepository.selectPage(mpPage, wrapper);
+        List<Product> products = resultPage.getRecords();
+        long total = resultPage.getTotal();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir),
+                "price".equals(sortBy) ? "price" : "createdAt"));
+        List<ProductListItemDto> dtoList = products.stream()
+                .map(this::toListItemDto)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(dtoList, pageable, total);
     }
 
     @Transactional(readOnly = true)
@@ -139,13 +163,13 @@ public class ProductService {
             if (category == null) {
                 category = new Category();
                 category.setName(request.getCategoryName());
-                category = categoryRepository.save(category);
+                categoryRepository.insert(category);
             }
             categoryId = category.getId();
         }
         product.setCategoryId(categoryId);
 
-        product = productRepository.save(product);
+        productRepository.insert(product);
 
         if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
             int sort = 0;
@@ -155,7 +179,7 @@ public class ProductService {
                 image.setProductId(product.getId());
                 image.setUrl(url);
                 image.setSortOrder(sort++);
-                productImageRepository.save(image);
+                productImageRepository.insert(image);
             }
         }
 
@@ -189,7 +213,7 @@ public class ProductService {
             if (category == null) {
                 category = new Category();
                 category.setName(request.getCategoryName());
-                category = categoryRepository.save(category);
+                categoryRepository.insert(category);
             }
             categoryId = category.getId();
         }
@@ -202,7 +226,7 @@ public class ProductService {
         }
 
         product.setUpdatedAt(LocalDateTime.now());
-        productRepository.save(product);
+        productRepository.update(product);
 
         if (request.getImageUrls() != null) {
             productImageRepository.deleteByProductId(product.getId());
@@ -213,7 +237,7 @@ public class ProductService {
                 image.setProductId(product.getId());
                 image.setUrl(url);
                 image.setSortOrder(sort++);
-                productImageRepository.save(image);
+                productImageRepository.insert(image);
             }
         }
 
@@ -229,14 +253,26 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public Page<ProductListItemDto> listBySeller(Long sellerId, String status, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<Product> productPage;
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<Product> mpPage =
+                new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(page + 1L, size);
+        QueryWrapper<Product> wrapper = new QueryWrapper<>();
+        wrapper.eq("seller_id", sellerId);
         if (status != null && !status.isBlank()) {
-            productPage = productRepository.findBySellerIdAndStatus(sellerId, status, pageable);
-        } else {
-            productPage = productRepository.findBySellerId(sellerId, pageable);
+            wrapper.eq("status", status);
         }
-        return productPage.map(this::toListItemDto);
+        wrapper.orderByDesc("created_at");
+
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<Product> resultPage =
+                productRepository.selectPage(mpPage, wrapper);
+        List<Product> products = resultPage.getRecords();
+        long total = resultPage.getTotal();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        List<ProductListItemDto> dtoList = products.stream()
+                .map(this::toListItemDto)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(dtoList, pageable, total);
     }
 
     public ProductDto updateStatus(Long id, Long sellerId, String status) {
@@ -253,7 +289,7 @@ public class ProductService {
 
         product.setStatus(status);
         product.setUpdatedAt(LocalDateTime.now());
-        productRepository.save(product);
+        productRepository.update(product);
 
         return getDetail(id);
     }
@@ -268,7 +304,7 @@ public class ProductService {
 
         product.setStatus("DELETED");
         product.setUpdatedAt(LocalDateTime.now());
-        productRepository.save(product);
+        productRepository.update(product);
     }
 
     public void increaseViewCount(Long id) {
@@ -279,7 +315,7 @@ public class ProductService {
             }
             product.setViewCount(current + 1);
             product.setUpdatedAt(LocalDateTime.now());
-            productRepository.save(product);
+            productRepository.update(product);
         });
     }
 

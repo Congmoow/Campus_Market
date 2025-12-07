@@ -1,5 +1,7 @@
 package com.campus.market.order;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.campus.market.chat.ChatService;
 import com.campus.market.common.exception.BusinessException;
 import com.campus.market.order.dto.CreateOrderRequest;
 import com.campus.market.order.dto.OrderDto;
@@ -24,15 +26,18 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
     private final UserProfileRepository userProfileRepository;
+    private final ChatService chatService;
 
     public OrderService(OrderRepository orderRepository,
                         ProductRepository productRepository,
                         ProductImageRepository productImageRepository,
-                        UserProfileRepository userProfileRepository) {
+                        UserProfileRepository userProfileRepository,
+                        ChatService chatService) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
         this.productImageRepository = productImageRepository;
         this.userProfileRepository = userProfileRepository;
+        this.chatService = chatService;
     }
 
     /**
@@ -64,7 +69,36 @@ public class OrderService {
         order.setMeetLocation(product.getLocation());
         // meetTime 暂时为空，后续可支持预约时间
 
-        order = orderRepository.save(order);
+        order.prePersist();
+        orderRepository.insert(order);
+
+        chatService.sendOrderEventMessage(order.getBuyerId(), order.getSellerId(), order.getProductId(), order.getBuyerId(), "我已拍下该商品，请尽快发货～");
+
+        return toDto(order);
+    }
+
+    /**
+     * 卖家标记已发货，将订单状态标记为 SHIPPED。
+     */
+    public OrderDto shipOrder(Long userId, Long orderId) {
+        if (userId == null) {
+            throw new BusinessException("未登录");
+        }
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new BusinessException("订单不存在"));
+
+        if (!Objects.equals(order.getSellerId(), userId)) {
+            throw new BusinessException("只有卖家可以发货");
+        }
+        if (!"PENDING".equals(order.getStatus())) {
+            throw new BusinessException("当前订单状态不可发货");
+        }
+
+        order.setStatus("SHIPPED");
+        order.preUpdate();
+        orderRepository.update(order);
+
+        chatService.sendOrderEventMessage(order.getBuyerId(), order.getSellerId(), order.getProductId(), order.getSellerId(), "我已发货，请注意查收～");
 
         return toDto(order);
     }
@@ -82,19 +116,22 @@ public class OrderService {
         if (!Objects.equals(order.getBuyerId(), userId)) {
             throw new BusinessException("只有买家可以确认收货");
         }
-        if (!"PENDING".equals(order.getStatus())) {
+        if (!"PENDING".equals(order.getStatus()) && !"SHIPPED".equals(order.getStatus())) {
             throw new BusinessException("当前订单状态不可确认收货");
         }
 
         order.setStatus("DONE");
-        order = orderRepository.save(order);
+        order.preUpdate();
+        orderRepository.update(order);
 
         // 同步更新商品状态为已售出，避免继续展示在最新发布列表中
         Product product = productRepository.findById(order.getProductId()).orElse(null);
         if (product != null && (product.getStatus() == null || !"SOLD".equals(product.getStatus()))) {
             product.setStatus("SOLD");
-            productRepository.save(product);
+            productRepository.update(product);
         }
+
+        chatService.sendOrderEventMessage(order.getBuyerId(), order.getSellerId(), order.getProductId(), order.getBuyerId(), "我已确认收货，本次交易已完成～");
 
         return toDto(order);
     }
@@ -113,20 +150,18 @@ public class OrderService {
                 ? status.toUpperCase()
                 : null;
 
-        List<OrderEntity> orders;
+        QueryWrapper<OrderEntity> wrapper = new QueryWrapper<>();
         if ("SELL".equals(roleUpper)) {
-            if (statusFilter != null) {
-                orders = orderRepository.findBySellerIdAndStatusOrderByCreatedAtDesc(userId, statusFilter);
-            } else {
-                orders = orderRepository.findBySellerIdOrderByCreatedAtDesc(userId);
-            }
+            wrapper.eq("seller_id", userId);
         } else {
-            if (statusFilter != null) {
-                orders = orderRepository.findByBuyerIdAndStatusOrderByCreatedAtDesc(userId, statusFilter);
-            } else {
-                orders = orderRepository.findByBuyerIdOrderByCreatedAtDesc(userId);
-            }
+            wrapper.eq("buyer_id", userId);
         }
+        if (statusFilter != null) {
+            wrapper.eq("status", statusFilter);
+        }
+        wrapper.orderByDesc("created_at", "id");
+
+        List<OrderEntity> orders = orderRepository.selectList(wrapper);
 
         return orders.stream().map(this::toDto).collect(Collectors.toList());
     }

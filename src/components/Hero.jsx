@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles, BookOpen, Laptop, Bike } from 'lucide-react';
+import { ArrowRight, Sparkles, BookOpen, Bike } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import LazyLottie from './LazyLottie';
+import shoppingCartAnimation from '../assets/shopping-cart.json';
+import mobileEarnAnimation from '../assets/men-using-mobile-and-earn-money.json';
+
 
 const FloatingIcon = ({ icon: Icon, delay, className }) => (
   <motion.div
@@ -31,10 +35,37 @@ const Hero = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        {/* Decorative Floating Icons */}
-        <FloatingIcon icon={BookOpen} delay={0} className="top-20 left-20 rotate-12" />
-        <FloatingIcon icon={Laptop} delay={1} className="bottom-40 right-20 -rotate-6" />
-        <FloatingIcon icon={Bike} delay={0.5} className="top-40 right-1/4 -rotate-12 scale-75 opacity-80" />
+        {/* 左侧购物车动画 */}
+        <motion.div
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="absolute left-0 top-1/2 -translate-y-1/2 hidden xl:block"
+        >
+          <div className="w-[200px] h-[200px]">
+            <LazyLottie 
+              animationData={shoppingCartAnimation}
+              loop={true}
+              className="w-full h-full drop-shadow-lg"
+            />
+          </div>
+        </motion.div>
+
+        {/* 右侧手机赚钱动画 */}
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+          className="absolute right-0 top-1/2 -translate-y-1/2 hidden xl:block"
+        >
+          <div className="w-[350px] h-[350px]">
+            <LazyLottie 
+              animationData={mobileEarnAnimation}
+              loop={true}
+              className="w-full h-full drop-shadow-lg"
+            />
+          </div>
+        </motion.div>
 
         <div className="text-center max-w-3xl mx-auto">
           <motion.div
@@ -82,9 +113,6 @@ const Hero = () => {
                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
               </button>
             </Link>
-            <button className="w-full sm:w-auto px-8 py-4 bg-white text-slate-700 border border-slate-200 rounded-full font-semibold hover:bg-slate-50 transition-all hover:border-slate-300 flex items-center justify-center">
-              查看使用指南
-            </button>
           </motion.div>
         </div>
       </div>

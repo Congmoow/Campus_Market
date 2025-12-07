@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { motion } from 'framer-motion';
+import LazyLottie from '../components/LazyLottie';
+import paperplaneAnimation from '../assets/Paperplane.json';
 import { Upload, X, DollarSign, MapPin, ChevronDown, Save, Rocket, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { productApi, fileApi } from '../api';
@@ -132,41 +134,35 @@ const Publish = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-white pb-20">
       <Navbar />
       
       <div className="pt-32 max-w-3xl mx-auto px-4 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden"
+          className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/50 overflow-visible relative"
         >
-          <div className="p-8 border-b border-slate-100 flex items-center justify-between gap-6">
+          <div className="p-8 border-b border-slate-100/50 flex items-center justify-between gap-6 bg-gradient-to-r from-blue-50/50 to-transparent">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">发布闲置</h1>
+              <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-indigo-600">发布闲置</h1>
               <p className="text-slate-500 mt-1">填写物品信息，快速回血</p>
             </div>
 
-            {/* 右侧动态图：发布成功 & 回血动画提示（在中大屏显示） */}
-            <motion.div
-              className="hidden sm:flex items-center gap-3 pl-5 pr-8 py-3 rounded-full bg-gradient-to-r from-emerald-50 via-blue-50 to-sky-50 backdrop-blur-md border border-emerald-100/70 shadow-lg shadow-slate-200/70"
-              animate={{ y: [0, -6, 0] }}
-              transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-            >
-              <div className="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-400/60">
-                <DollarSign size={22} />
-              </div>
-              <div className="text-[13px] text-left leading-snug">
-                <div className="font-semibold text-emerald-700 flex items-center gap-1">
-                  <TrendingUp size={14} />
-                  <span>发布成功 · 余额回血中</span>
-                </div>
-                <div className="text-emerald-500 mt-0.5">
-                  已帮 120+ 位同学回血零花钱
-                </div>
-              </div>
-            </motion.div>
           </div>
+
+          {/* 悬浮纸飞机动画（在中大屏显示） */}
+          <motion.div
+            className="hidden sm:block absolute -top-16 -right-12 z-10"
+            animate={{ y: [0, -10, 0], rotate: [0, 5, 0] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <LazyLottie
+              animationData={paperplaneAnimation}
+              loop={true}
+              style={{ width: 225, height: 200 }}
+            />
+          </motion.div>
 
           <form className="p-8 space-y-8" onSubmit={handleSubmit}>
             {/* Image Upload */}
@@ -190,7 +186,7 @@ const Publish = () => {
                     </button>
                   </div>
                 ))}
-                <label className="aspect-square rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 text-slate-400 cursor-pointer hover:border-blue-500 hover:text-blue-500 hover:bg-blue-50 transition-all">
+                <label className="aspect-square rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 text-slate-400 cursor-pointer hover:border-blue-500 hover:text-blue-500 hover:bg-blue-50/50 transition-all bg-slate-50/50">
                   <Upload size={24} />
                   <span className="text-xs font-medium">上传图片</span>
                   <input type="file" multiple className="hidden" onChange={handleImageUpload} accept="image/*" />
@@ -207,7 +203,7 @@ const Publish = () => {
                   placeholder="品牌型号 + 关键特点"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50/50 border border-slate-200 hover:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
                 />
               </div>
 
@@ -218,7 +214,7 @@ const Publish = () => {
                   placeholder="描述一下物品的新旧程度、入手渠道、转手原因等..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50/50 border border-slate-200 hover:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all resize-none"
                 />
               </div>
             </div>
@@ -236,7 +232,7 @@ const Publish = () => {
                     placeholder="0.00"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50/50 border border-slate-200 hover:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
                   />
                 </div>
               </div>
@@ -252,7 +248,7 @@ const Publish = () => {
                     placeholder="0.00"
                     value={originalPrice}
                     onChange={(e) => setOriginalPrice(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50/50 border border-slate-200 hover:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
                   />
                 </div>
               </div>
@@ -268,8 +264,8 @@ const Publish = () => {
                     onClick={() => setCategory(cat)}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                       category === cat
-                        ? "bg-blue-600 text-white shadow-md shadow-blue-500/30"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30 ring-2 ring-blue-500/20"
+                        : "bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                     }`}
                   >
                     {cat}
@@ -284,7 +280,7 @@ const Publish = () => {
                 <button
                   type="button"
                   onClick={() => setLocationOpen((open) => !open)}
-                  className="w-full pl-10 pr-10 py-3 rounded-xl bg-slate-50 border border-slate-200 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-left flex items-center"
+                  className="w-full pl-10 pr-10 py-3 rounded-xl bg-slate-50/50 border border-slate-200 hover:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-left flex items-center"
                 >
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
                     <MapPin size={18} />
@@ -335,7 +331,7 @@ const Publish = () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-[2] py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-500/30 transition-all transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-[2] py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-blue-500/30 transition-all transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {submitting ? (
                   '发布中...'

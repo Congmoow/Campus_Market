@@ -1,12 +1,33 @@
 package com.campus.market.product;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 
-public interface ProductImageRepository extends JpaRepository<ProductImage, Long> {
+@Mapper
+public interface ProductImageRepository extends BaseMapper<ProductImage> {
 
-    List<ProductImage> findByProductIdOrderBySortOrderAsc(Long productId);
+    default List<ProductImage> findByProductIdOrderBySortOrderAsc(Long productId) {
+        if (productId == null) {
+            return List.of();
+        }
+        LambdaQueryWrapper<ProductImage> wrapper = Wrappers.lambdaQuery(ProductImage.class)
+                .eq(ProductImage::getProductId, productId)
+                .orderByAsc(ProductImage::getSortOrder, ProductImage::getId);
+        return selectList(wrapper);
+    }
 
-    void deleteByProductId(Long productId);
+    default int deleteByProductId(Long productId) {
+        if (productId == null) {
+            return 0;
+        }
+        LambdaQueryWrapper<ProductImage> wrapper = Wrappers.lambdaQuery(ProductImage.class)
+                .eq(ProductImage::getProductId, productId);
+        return delete(wrapper);
+    }
+
+    // insert 方法由 BaseMapper 提供，无需重写
 }

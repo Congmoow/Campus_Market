@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, CheckCircle, Clock, Package, ChevronRight, MessageCircle } from 'lucide-react';
+import { ShoppingBag, CheckCircle, Clock, Package, ChevronRight, MessageCircle, Truck } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { orderApi } from '../api';
 
@@ -46,6 +46,8 @@ const MyOrders = () => {
     switch(status) {
       case 'PENDING':
         return { label: '进行中', color: 'text-orange-600', bg: 'bg-orange-50', icon: Clock };
+      case 'SHIPPED':
+        return { label: '交易中', color: 'text-blue-600', bg: 'bg-blue-50', icon: Truck };
       case 'DONE':
         return { label: '已收货', color: 'text-green-600', bg: 'bg-green-50', icon: CheckCircle };
       case 'CANCELLED':

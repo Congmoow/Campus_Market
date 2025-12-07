@@ -67,7 +67,8 @@ public class FavoriteService {
         Favorite favorite = new Favorite();
         favorite.setUserId(userId);
         favorite.setProductId(productId);
-        favoriteRepository.save(favorite);
+        favorite.prePersist();
+        favoriteRepository.insert(favorite);
     }
 
     public void removeFavorite(Long userId, Long productId) {

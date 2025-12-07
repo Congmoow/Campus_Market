@@ -1,16 +1,18 @@
 package com.campus.market.order;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
 
-import java.util.List;
+import java.util.Optional;
 
-public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
+@Mapper
+public interface OrderRepository extends BaseMapper<OrderEntity> {
 
-    List<OrderEntity> findByBuyerIdOrderByCreatedAtDesc(Long buyerId);
+    default Optional<OrderEntity> findById(Long id) {
+        return Optional.ofNullable(selectById(id));
+    }
 
-    List<OrderEntity> findBySellerIdOrderByCreatedAtDesc(Long sellerId);
-
-    List<OrderEntity> findByBuyerIdAndStatusOrderByCreatedAtDesc(Long buyerId, String status);
-
-    List<OrderEntity> findBySellerIdAndStatusOrderByCreatedAtDesc(Long sellerId, String status);
+    default int update(OrderEntity order) {
+        return updateById(order);
+    }
 }

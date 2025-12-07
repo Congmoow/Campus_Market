@@ -43,6 +43,7 @@ const Marketplace = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isSortOpen, setIsSortOpen] = useState(false);
 
   const sortKey = (label) => {
     switch (label) {
@@ -133,19 +134,41 @@ const Marketplace = () => {
             
             {/* Sort & Filter Actions */}
             <div className="flex items-center gap-3 shrink-0">
-              <div className="relative group">
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white rounded-full text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors border border-slate-100 shadow-sm appearance-none pr-8"
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsSortOpen((prev) => !prev)}
+                  className="inline-flex items-center justify-between gap-2 min-w-[120px] px-4 py-2 bg-white rounded-full text-sm font-medium text-slate-700 hover:bg-slate-50 border border-slate-100 shadow-sm transition-all"
                 >
-                  {SORT_OPTIONS.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <span>{sortBy}</span>
+                  <ChevronDown
+                    size={16}
+                    className={`text-slate-400 transition-transform ${isSortOpen ? 'rotate-180' : ''}`}
+                  />
+                </button>
+
+                {isSortOpen && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white rounded-2xl shadow-lg border border-slate-100 py-1 z-20">
+                    {SORT_OPTIONS.map((opt) => (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => {
+                          setSortBy(opt);
+                          setIsSortOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between rounded-xl transition-colors ${
+                          sortBy === opt
+                            ? 'bg-blue-50 text-blue-600 font-semibold'
+                            : 'text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        <span>{opt}</span>
+                        {sortBy === opt && <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               <button className="p-2.5 bg-white rounded-full text-slate-600 hover:bg-slate-50 border border-slate-100 shadow-sm transition-colors">
                 <Filter size={18} />

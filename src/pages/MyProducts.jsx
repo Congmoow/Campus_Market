@@ -486,8 +486,8 @@ const MyProducts = () => {
               error: 'bg-red-50 border-red-200 text-red-700',
             }[toast.type] || 'bg-slate-50 border-slate-200 text-slate-700'}`}
           >
-            <div className="flex items-start gap-2">
-              <span className="mt-0.5 w-1.5 h-1.5 rounded-full bg-current" />
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-current" />
               <div className="flex-1 leading-snug">{toast.message}</div>
               <button
                 className="ml-2 text-xs text-slate-400 hover:text-slate-600"

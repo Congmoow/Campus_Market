@@ -43,7 +43,7 @@ const EditProfileModal = ({ isOpen, onClose, currentProfile, onSuccess }) => {
     setUploadingAvatar(true);
 
     try {
-      const res = await fileApi.uploadImage(file);
+      const res = await fileApi.uploadImage(file, 'avatars');
       if (res.success && res.data && res.data.url) {
         setFormData(prev => ({ ...prev, avatarUrl: res.data.url }));
       } else {

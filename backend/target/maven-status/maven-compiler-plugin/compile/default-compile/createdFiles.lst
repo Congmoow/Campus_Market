@@ -5,6 +5,7 @@ com\campus\market\user\UserController.class
 com\campus\market\auth\JwtAuthenticationFilter.class
 com\campus\market\product\ProductController.class
 com\campus\market\order\OrderService.class
+com\campus\market\config\MybatisPlusConfig.class
 com\campus\market\order\OrderEntity.class
 com\campus\market\chat\ChatController.class
 com\campus\market\product\Product.class

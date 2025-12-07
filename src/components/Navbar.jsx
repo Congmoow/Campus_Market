@@ -288,8 +288,8 @@ const Navbar = () => {
               {/* Avatar / Login Area */}
               {isLoggedIn ? (
                 <div className="relative group">
-                  <Link to={`/user/${currentUser?.id}`} className="block w-10 h-10 rounded-full bg-gradient-to-tr from-blue-400 to-cyan-300 p-0.5 cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-full h-full rounded-full bg-white overflow-hidden">
+                  <Link to={`/user/${currentUser?.id}`} className="block w-10 h-10 rounded-full overflow-hidden cursor-pointer hover:scale-105 transition-transform">
+                    <div className="w-full h-full rounded-full overflow-hidden">
                       <img 
                         src={avatarUrl} 
                         alt="User" 
@@ -302,7 +302,7 @@ const Navbar = () => {
                   <div className="absolute right-0 top-full pt-2 w-56 opacity-0 translate-y-2 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-200 ease-out z-50">
                     <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-2 overflow-hidden">
                       <Link to={`/user/${currentUser?.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 rounded-xl transition-colors mb-1">
-                        <div className="w-8 h-8 rounded-full bg-slate-100 overflow-hidden">
+                        <div className="w-12 h-12 rounded-full bg-slate-100 overflow-hidden">
                            <img src={avatarUrl} alt="" className="w-full h-full object-cover"/>
                         </div>
                         <div>

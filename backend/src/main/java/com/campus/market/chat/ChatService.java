@@ -61,7 +61,10 @@ public class ChatService {
         // 将对方发送的消息标记为已读
         messages.stream()
                 .filter(m -> !Objects.equals(m.getSenderId(), userId) && !Boolean.TRUE.equals(m.getRead()))
-                .forEach(m -> m.setRead(true));
+                .forEach(m -> {
+                    m.setRead(true);
+                    chatMessageRepository.update(m);
+                });
 
         return messages.stream().map(this::toMessageDto).collect(Collectors.toList());
     }
@@ -79,7 +82,10 @@ public class ChatService {
             List<ChatMessage> messages = chatMessageRepository.findBySessionIdOrderByCreatedAtAsc(session.getId());
             messages.stream()
                     .filter(m -> !Objects.equals(m.getSenderId(), userId) && !Boolean.TRUE.equals(m.getRead()))
-                    .forEach(m -> m.setRead(true));
+                    .forEach(m -> {
+                        m.setRead(true);
+                        chatMessageRepository.update(m);
+                    });
         }
     }
 
@@ -99,17 +105,58 @@ public class ChatService {
 
         ChatSession session = chatSessionRepository
                 .findByBuyerIdAndSellerIdAndProductId(buyerId, sellerId, product.getId())
-                .orElseGet(() -> {
-                    ChatSession s = new ChatSession();
-                    s.setBuyerId(buyerId);
-                    s.setSellerId(sellerId);
-                    s.setProductId(product.getId());
-                    s.setLastTime(LocalDateTime.now());
-                    s.setLastMessage(null);
-                    return chatSessionRepository.save(s);
-                });
+                .orElse(null);
+
+        if (session == null) {
+            ChatSession s = new ChatSession();
+            s.setBuyerId(buyerId);
+            s.setSellerId(sellerId);
+            s.setProductId(product.getId());
+            s.setLastTime(LocalDateTime.now());
+            s.setLastMessage(null);
+            s.prePersist();
+            chatSessionRepository.insert(s);
+            session = s;
+        }
 
         return toSessionDto(session, userId);
+    }
+
+    public void sendOrderEventMessage(Long buyerId, Long sellerId, Long productId, Long senderId, String content) {
+        if (buyerId == null || sellerId == null || productId == null || senderId == null) {
+            throw new BusinessException("参数不能为空");
+        }
+        if (content == null || content.isBlank()) {
+            throw new BusinessException("消息内容不能为空");
+        }
+
+        ChatSession session = chatSessionRepository
+                .findByBuyerIdAndSellerIdAndProductId(buyerId, sellerId, productId)
+                .orElse(null);
+
+        if (session == null) {
+            ChatSession s = new ChatSession();
+            s.setBuyerId(buyerId);
+            s.setSellerId(sellerId);
+            s.setProductId(productId);
+            s.setLastTime(LocalDateTime.now());
+            s.setLastMessage(null);
+            s.prePersist();
+            chatSessionRepository.insert(s);
+            session = s;
+        }
+
+        ChatMessage message = new ChatMessage();
+        message.setSessionId(session.getId());
+        message.setSenderId(senderId);
+        message.setType("TEXT");
+        message.setContent(content);
+        message.prePersist();
+        chatMessageRepository.insert(message);
+
+        session.setLastMessage(content);
+        session.setLastTime(LocalDateTime.now());
+        chatSessionRepository.update(session);
     }
 
     public ChatMessageDto sendMessage(Long sessionId, Long userId, SendMessageRequest request) {
@@ -128,7 +175,8 @@ public class ChatService {
         String type = request.getType() != null ? request.getType() : "TEXT";
         message.setType(type);
         message.setContent(request.getContent());
-        message = chatMessageRepository.save(message);
+        message.prePersist();
+        chatMessageRepository.insert(message);
 
         String lastPreview;
         if ("IMAGE".equalsIgnoreCase(type)) {
@@ -139,7 +187,7 @@ public class ChatService {
 
         session.setLastMessage(lastPreview);
         session.setLastTime(LocalDateTime.now());
-        chatSessionRepository.save(session);
+        chatSessionRepository.update(session);
 
         return toMessageDto(message);
     }
@@ -173,11 +221,11 @@ public class ChatService {
 
         message.setType("RECALL");
         message.setContent("");
-        chatMessageRepository.save(message);
+        chatMessageRepository.update(message);
 
         session.setLastMessage("一条消息已被撤回");
         session.setLastTime(now);
-        chatSessionRepository.save(session);
+        chatSessionRepository.update(session);
 
         return toMessageDto(message);
     }
@@ -197,26 +245,31 @@ public class ChatService {
 
         ChatSession session = chatSessionRepository
                 .findByBuyerIdAndSellerIdAndProductIdIsNull(targetUserId, systemUserId)
-                .orElseGet(() -> {
-                    ChatSession s = new ChatSession();
-                    s.setBuyerId(targetUserId);
-                    s.setSellerId(systemUserId);
-                    s.setProductId(null);
-                    s.setLastTime(LocalDateTime.now());
-                    s.setLastMessage(null);
-                    return chatSessionRepository.save(s);
-                });
+                .orElse(null);
+
+        if (session == null) {
+            ChatSession s = new ChatSession();
+            s.setBuyerId(targetUserId);
+            s.setSellerId(systemUserId);
+            s.setProductId(null);
+            s.setLastTime(LocalDateTime.now());
+            s.setLastMessage(null);
+            s.prePersist();
+            chatSessionRepository.insert(s);
+            session = s;
+        }
 
         ChatMessage message = new ChatMessage();
         message.setSessionId(session.getId());
         message.setSenderId(systemUserId);
         message.setType("TEXT");
         message.setContent(content);
-        message = chatMessageRepository.save(message);
+        message.prePersist();
+        chatMessageRepository.insert(message);
 
         session.setLastMessage(content);
         session.setLastTime(LocalDateTime.now());
-        chatSessionRepository.save(session);
+        chatSessionRepository.update(session);
 
         return toMessageDto(message);
     }
