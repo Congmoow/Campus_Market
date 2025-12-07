@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { MapPin, Clock, Heart, Share2, MessageCircle, ShieldCheck, ShoppingBag } from 'lucide-react';
+import { MapPin, Clock, Heart, Share2, MessageCircle, ShieldCheck, ShoppingBag, Eye } from 'lucide-react';
 import { productApi, chatApi, favoriteApi } from '../api';
 import { invalidateFavoriteIdsCache } from '../components/ProductCard';
 
@@ -51,6 +51,7 @@ const ProductDetail = () => {
             images,
             location: p.location || '校内',
             timeAgo,
+            viewCount: p.viewCount ?? 0,
             seller: {
               id: p.sellerId,
               name: p.sellerName || '同学',
@@ -169,6 +170,13 @@ const ProductDetail = () => {
               <div className="flex items-start justify-between mb-4">
                  <h1 className="text-3xl font-bold text-slate-900 leading-tight">{product.title}</h1>
                  <div className="flex gap-2 items-center">
+                    <span
+                      className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-slate-100 text-sm text-slate-600 shadow-sm"
+                      title="浏览量"
+                    >
+                      <Eye size={16} />
+                      {(product.viewCount ?? 0)} 人看过
+                    </span>
                     <button className="p-2.5 rounded-full bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
                         <Share2 size={20} />
                     </button>

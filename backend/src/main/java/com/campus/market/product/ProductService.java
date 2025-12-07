@@ -65,6 +65,9 @@ public class ProductService {
         } else if ("priceDesc".equalsIgnoreCase(sort)) {
             sortBy = "price";
             sortDir = "DESC";
+        } else if ("viewDesc".equalsIgnoreCase(sort)) {
+            sortBy = "viewCount";
+            sortDir = "DESC";
         } else {
             sortBy = "createdAt";
             sortDir = "DESC";
@@ -83,6 +86,8 @@ public class ProductService {
 
         if ("price".equals(sortBy)) {
             wrapper.orderBy(true, "ASC".equalsIgnoreCase(sortDir), "price");
+        } else if ("viewCount".equals(sortBy)) {
+            wrapper.orderBy(true, "ASC".equalsIgnoreCase(sortDir), "view_count");
         } else {
             wrapper.orderBy(true, "ASC".equalsIgnoreCase(sortDir), "created_at");
         }
@@ -92,8 +97,14 @@ public class ProductService {
         List<Product> products = resultPage.getRecords();
         long total = resultPage.getTotal();
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir),
-                "price".equals(sortBy) ? "price" : "createdAt"));
+        String sortProperty = "createdAt";
+        if ("price".equals(sortBy)) {
+            sortProperty = "price";
+        } else if ("viewCount".equals(sortBy)) {
+            sortProperty = "viewCount";
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortProperty));
         List<ProductListItemDto> dtoList = products.stream()
                 .map(this::toListItemDto)
                 .collect(Collectors.toList());
