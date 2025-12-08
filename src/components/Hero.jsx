@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles, BookOpen, Bike } from 'lucide-react';
+import { Sparkles, BookOpen, Bike, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import LazyLottie from './LazyLottie';
 import shoppingCartAnimation from '../assets/shopping-cart.json';
@@ -110,7 +110,7 @@ const Hero = () => {
             <Link to="/market" className="w-full sm:w-auto">
               <button className="w-full sm:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold shadow-lg shadow-blue-500/30 transition-all hover:scale-105 flex items-center justify-center gap-2 group">
                 立即开始探索
-                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                <Play className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
             </Link>
           </motion.div>

@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Lock, Mail, ArrowRight, School, ShieldCheck, X } from 'lucide-react';
+import { User, Lock, Mail, ArrowRight, X } from 'lucide-react';
 import { authApi } from '../api';
-import LazyLottie from './LazyLottie';
-import studentAnimation from '../assets/student-animation.json';
+import happyStudent from '../assets/storyset-happy-student.svg';
 
 const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -116,24 +115,18 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
             {/* 装饰背景 */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/3 -translate-x-1/3"></div>
-            
-            {/* Logo */}
-            <div className="relative z-10 flex items-center gap-2 text-xl font-bold">
-              <School size={28} />
-              校园集市
-            </div>
 
-            {/* Lottie 动画区域 - 居中展示 */}
+            {/* 插画动画区域 - 使用 Storyset SVG */}
             <div className="relative z-10 flex-1 flex items-center justify-center py-4">
               <motion.div 
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, ease: "easeOut" }}
-                className="w-full max-w-[300px]"
+                className="w-full max-w-[420px]"
               >
-                <LazyLottie 
-                  animationData={studentAnimation} 
-                  loop={true}
+                <img
+                  src={happyStudent}
+                  alt="校园快乐学生插画"
                   className="w-full h-auto drop-shadow-2xl"
                 />
               </motion.div>
@@ -161,16 +154,6 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
                   ? "登录你的校园账号，发现闲置好物" 
                   : "一分钟完成认证，开启交易之旅"}
               </motion.p>
-              
-              {/* 标签 */}
-              <div className="flex gap-2 text-xs text-blue-100 pt-2">
-                <div className="flex items-center gap-1 bg-white/15 px-3 py-1.5 rounded-full backdrop-blur-sm">
-                  <ShieldCheck size={12} /> 实名认证
-                </div>
-                <div className="flex items-center gap-1 bg-white/15 px-3 py-1.5 rounded-full backdrop-blur-sm">
-                  <School size={12} /> 仅限本校
-                </div>
-              </div>
             </div>
           </div>
 

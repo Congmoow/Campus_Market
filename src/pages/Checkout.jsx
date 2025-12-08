@@ -184,48 +184,76 @@ const Checkout = () => {
                 <motion.div
                   whileTap={{ scale: 0.99 }}
                   onClick={() => setTradeMethod('delivery')}
-                  className={`flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                  className={`relative flex items-center justify-between p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 overflow-hidden ${
                     tradeMethod === 'delivery'
-                      ? 'border-blue-600 bg-blue-50/40 shadow-sm'
+                      ? 'border-blue-600 bg-blue-50/30 shadow-sm'
                       : 'border-slate-100 hover:border-slate-200 hover:bg-slate-50'
                   }`}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
-                      <Truck size={20} />
+                  {tradeMethod === 'delivery' && (
+                    <motion.div 
+                      layoutId="trade-highlight"
+                      className="absolute inset-0 bg-blue-50/50 -z-10"
+                    />
+                  )}
+                  <div className="flex items-center gap-4 z-10">
+                    <div className="w-12 h-12 rounded-full bg-white shadow-sm border border-slate-100 flex items-center justify-center text-blue-600">
+                      <Truck size={24} />
                     </div>
                     <div>
                       <p className="font-bold text-slate-900">送货上门</p>
-                      <p className="text-xs text-slate-500">卖家在校内为你送货，当面验货后完成交易</p>
+                      <p className="text-sm text-slate-500">卖家在校内为你送货，当面验货后完成交易</p>
                     </div>
                   </div>
-                  {tradeMethod === 'delivery' && (
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-                  )}
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors z-10 ${
+                    tradeMethod === 'delivery' ? 'border-blue-600 bg-blue-600' : 'border-slate-300'
+                  }`}>
+                    {tradeMethod === 'delivery' && (
+                      <motion.div 
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="w-2.5 h-2.5 rounded-full bg-white" 
+                      />
+                    )}
+                  </div>
                 </motion.div>
 
                 {/* 线下自提 */}
                 <motion.div
                   whileTap={{ scale: 0.99 }}
                   onClick={() => setTradeMethod('pickup')}
-                  className={`flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                  className={`relative flex items-center justify-between p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 overflow-hidden ${
                     tradeMethod === 'pickup'
-                      ? 'border-blue-600 bg-blue-50/40 shadow-sm'
+                      ? 'border-blue-600 bg-blue-50/30 shadow-sm'
                       : 'border-slate-100 hover:border-slate-200 hover:bg-slate-50'
                   }`}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-green-50 text-green-600 flex items-center justify-center">
-                      <MapPin size={20} />
+                  {tradeMethod === 'pickup' && (
+                    <motion.div 
+                      layoutId="trade-highlight"
+                      className="absolute inset-0 bg-blue-50/50 -z-10"
+                    />
+                  )}
+                  <div className="flex items-center gap-4 z-10">
+                    <div className="w-12 h-12 rounded-full bg-white shadow-sm border border-slate-100 flex items-center justify-center text-green-600">
+                      <MapPin size={24} />
                     </div>
                     <div>
                       <p className="font-bold text-slate-900">线下自提</p>
-                      <p className="text-xs text-slate-500">在 {product.location} 约定地点，当面完成交易</p>
+                      <p className="text-sm text-slate-500">在 {product.location} 约定地点，当面完成交易</p>
                     </div>
                   </div>
-                  {tradeMethod === 'pickup' && (
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-                  )}
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors z-10 ${
+                    tradeMethod === 'pickup' ? 'border-blue-600 bg-blue-600' : 'border-slate-300'
+                  }`}>
+                    {tradeMethod === 'pickup' && (
+                      <motion.div 
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="w-2.5 h-2.5 rounded-full bg-white" 
+                      />
+                    )}
+                  </div>
                 </motion.div>
               </div>
             </motion.div>

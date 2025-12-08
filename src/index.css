@@ -47,6 +47,32 @@
   scrollbar-width: none; /* Firefox */
 }
 
+/* 悬浮菜单项动画效果 */
+.menu-item-float {
+  position: relative;
+  transform: translateX(0);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.menu-item-float::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.25s ease-out;
+  pointer-events: none;
+}
+
+.menu-item-float:hover {
+  transform: translateX(4px);
+}
+
+.menu-item-float:hover::before {
+  opacity: 1;
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }

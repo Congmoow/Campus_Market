@@ -31,6 +31,7 @@ export const orderApi = {
   getMyOrders: (role, status) => request.get('/orders/me', { params: { role, status } }),
   confirm: (id) => request.post(`/orders/${id}/confirm`),
   ship: (id) => request.post(`/orders/${id}/ship`),
+  cancel: (id) => request.post(`/orders/${id}/cancel`),
 };
 
 export const chatApi = {

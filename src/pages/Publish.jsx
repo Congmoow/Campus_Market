@@ -3,7 +3,8 @@ import Navbar from '../components/Navbar';
 import { motion } from 'framer-motion';
 import LazyLottie from '../components/LazyLottie';
 import paperplaneAnimation from '../assets/Paperplane.json';
-import { Upload, X, DollarSign, MapPin, ChevronDown, Save, Rocket, TrendingUp } from 'lucide-react';
+import { Upload, X, DollarSign, MapPin, ChevronDown, Save, TrendingUp } from 'lucide-react';
+import { FolderUpload, Clear } from '@icon-park/react';
 import { useNavigate } from 'react-router-dom';
 import { productApi, fileApi } from '../api';
 
@@ -36,6 +37,17 @@ const Publish = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [locationOpen]);
+
+  const handleClear = () => {
+    setImages([]);
+    setCategory('');
+    setTitle('');
+    setDescription('');
+    setPrice('');
+    setOriginalPrice('');
+    setLocation('');
+    setError('');
+  };
 
   const categories = ["数码产品", "书籍教材", "生活用品", "衣物鞋帽", "美妆护肤", "运动器材", "其他"];
 
@@ -323,22 +335,35 @@ const Publish = () => {
             <div className="pt-6 flex items-center gap-4">
               <button
                 type="button"
-                className="flex-1 py-4 bg-slate-100 text-slate-700 font-medium hover:bg-slate-200 rounded-xl transition-colors flex items-center justify-center gap-2"
+                onClick={handleClear}
+                className="group flex-1 py-4 bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 rounded-xl transition-all flex items-center justify-center gap-2"
               >
-                <Save size={18} />
-                <span>保存草稿</span>
+                <Clear
+                  theme="filled"
+                  size={30}
+                  fill="#000000ff"
+                  strokeLinecap="square"
+                  className="transform transition-transform duration-200 group-hover:-translate-y-0.5"
+                />
+                <span className="transform transition-transform duration-200 group-hover:-translate-y-0.5">清空填写</span>
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-[2] py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-blue-500/30 transition-all transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="group flex-[2] py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-blue-500/30 transition-all transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {submitting ? (
                   '发布中...'
                 ) : (
                   <>
-                    <Rocket size={18} />
-                    <span>立即发布</span>
+                    <FolderUpload
+                      theme="outline"
+                      size={30}
+                      fill="#ffffff"
+                      strokeLinecap="square"
+                      className="transform transition-transform duration-200 group-hover:-translate-y-0.5"
+                    />
+                    <span className="transform transition-transform duration-200 group-hover:-translate-y-0.5">立即发布</span>
                   </>
                 )}
               </button>

@@ -2,8 +2,10 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Navbar from '../components/Navbar';
 import { motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
-import { Send, Image as ImageIcon, Smile } from 'lucide-react';
+import { Send, Image as ImageIcon, Smile, ChevronDown, MessageCircle } from 'lucide-react';
 import { chatApi } from '../api';
+import data from '@emoji-mart/data';
+import Picker from '@emoji-mart/react';
 
 const formatTime = (isoStr) => {
   if (!isoStr) return '';
@@ -68,6 +70,7 @@ const Chat = () => {
   const [sending, setSending] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [hasInitialScroll, setHasInitialScroll] = useState(false);
+  const [showProduct, setShowProduct] = useState(true);
 
   const currentUser = useMemo(() => {
     try {
@@ -312,7 +315,10 @@ const Chat = () => {
           {/* Sidebar - Chat List */}
           <div className="w-80 border-r border-slate-100 flex flex-col hidden md:flex">
             <div className="p-4 border-b border-slate-100">
-              <h2 className="font-bold text-lg text-slate-900">消息</h2>
+              <div className="flex items-center gap-2">
+                <MessageCircle size={18} className="text-blue-500" />
+                <h2 className="font-bold text-lg text-slate-900">消息</h2>
+              </div>
             </div>
             <div className="flex-1 overflow-y-auto">
               {loadingSessions ? (
@@ -356,67 +362,83 @@ const Chat = () => {
           </div>
 
           {/* Main Chat Area */}
-          <div className="flex-1 flex flex-col bg-slate-50/30">
+          <div className="flex-1 flex flex-col bg-white">
             {/* Chat Header */}
-            <div className="p-4 bg-white border-b border-slate-100 flex justify-between items-center gap-4">
+            <div className="bg-white border-b border-slate-100">
               {activeSession ? (
-                <Link to={`/user/${activeSession.partnerId}`} className="flex items-center gap-3 group">
-                  {(() => {
-                    const headerSeed = activeSession.partnerId || activeSession.partnerName || 'user';
-                    const headerAvatar = activeSession.partnerAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(headerSeed)}`;
-                    return (
-                      <img
-                        src={headerAvatar}
-                        alt=""
-                        className="w-10 h-10 rounded-full bg-slate-100 group-hover:ring-2 group-hover:ring-blue-200 transition-all"
-                      />
-                    );
-                  })()}
-                  <div>
-                    <h3 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                      {activeSession.partnerName || '同学'}
-                    </h3>
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                      <span className="text-xs text-slate-500">在线</span>
+                <div className="flex flex-col">
+                  {/* 对方信息 */}
+                  <Link to={`/user/${activeSession.partnerId}`} className="flex items-center gap-3 p-4 group">
+                    {(() => {
+                      const headerSeed = activeSession.partnerId || activeSession.partnerName || 'user';
+                      const headerAvatar = activeSession.partnerAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(headerSeed)}`;
+                      return (
+                        <img
+                          src={headerAvatar}
+                          alt=""
+                          className="w-10 h-10 rounded-full bg-slate-100 group-hover:ring-2 group-hover:ring-blue-200 transition-all"
+                        />
+                      );
+                    })()}
+                    <div className="flex-1">
+                      <h3 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                        {activeSession.partnerName || '同学'}
+                      </h3>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                        <span className="text-xs text-slate-500">在线</span>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ) : (
-                <div className="text-sm text-slate-400">请选择左侧会话开始聊天</div>
-              )}
-              {activeSession && activeSession.productId && (
-                <Link
-                  to={`/product/${activeSession.productId}`}
-                  className="flex items-center gap-3 text-right"
-                >
-                  <div className="h-10 w-px bg-blue-500/70 rounded-full" />
-                  {activeSession.productThumbnail && (
-                    <img
-                      src={activeSession.productThumbnail}
-                      alt={activeSession.productTitle || '商品缩略图'}
-                      className="w-12 h-12 rounded-xl object-cover bg-slate-100 flex-shrink-0"
-                    />
+                  </Link>
+                  {/* 商品卡片 - 闲鱼风格，白色底色与聊天区域一体 */}
+                  {activeSession.productId && (
+                    <div className="mx-4 mb-3">
+                      <div 
+                        className="flex items-center justify-between text-xs text-slate-400 cursor-pointer px-1 py-1"
+                        onClick={() => setShowProduct(!showProduct)}
+                      >
+                        <span>正在沟通的商品</span>
+                        <ChevronDown 
+                          size={18} 
+                          className={`text-slate-400 transition-transform duration-200 ${showProduct ? 'rotate-180' : ''}`}
+                        />
+                      </div>
+                      {showProduct && (
+                        <Link
+                          to={`/product/${activeSession.productId}`}
+                          className="flex items-center gap-4 px-2 py-3 hover:bg-slate-50 rounded-xl transition-colors mt-1"
+                        >
+                          {activeSession.productThumbnail && (
+                            <img
+                              src={activeSession.productThumbnail}
+                              alt={activeSession.productTitle || '商品缩略图'}
+                              className="w-20 h-20 rounded-lg object-cover bg-white flex-shrink-0 border border-slate-200"
+                            />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-base font-medium text-slate-900 truncate">
+                              {activeSession.productTitle || '商品详情'}
+                            </p>
+                            {activeSession.productPrice != null && (
+                              <p className="mt-1 text-lg font-bold text-orange-500">
+                                ¥{activeSession.productPrice}
+                              </p>
+                            )}
+                          </div>
+                        </Link>
+                      )}
+                    </div>
                   )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-slate-400 mb-0.5">正在沟通的商品</p>
-                    <p className="text-sm font-semibold text-slate-900 truncate">
-                      {activeSession.productTitle || '商品详情'}
-                    </p>
-                    {activeSession.productPrice != null && (
-                      <p className="mt-0.5 text-xs font-bold text-blue-600">
-                        ¥{activeSession.productPrice}
-                      </p>
-                    )}
-                  </div>
-                </Link>
+                </div>
+              ) : (
+                <div className="p-4 text-sm text-slate-400">请选择左侧会话开始聊天</div>
               )}
             </div>
 
             {/* Messages */}
             <div
               ref={messagesContainerRef}
-              className="flex-1 min-h-[260px] overflow-y-auto p-4 space-y-4 no-scrollbar"
+              className="flex-1 min-h-[260px] overflow-y-auto p-4 space-y-4 no-scrollbar bg-neutral-50"
             >
               {loadingMessages ? (
                 <div className="h-full flex items-center justify-center text-slate-400 text-sm">加载消息中...</div>
@@ -496,8 +518,8 @@ const Chat = () => {
             </div>
 
             {/* Input Area */}
-            <div className="p-4 bg-white border-t border-slate-100">
-              <div className="flex gap-2 mb-2 relative">
+            <div className="px-4 py-3 bg-white border-t border-slate-100 flex flex-col gap-3">
+              <div className="flex gap-2 relative">
                 <button
                   type="button"
                   onClick={handleImageButtonClick}
@@ -524,30 +546,22 @@ const Chat = () => {
                 />
 
                 {showEmojiPicker && (
-                  <div className="absolute bottom-12 left-0 z-10 w-64 rounded-2xl bg-white border border-slate-100 shadow-lg p-3">
-                    <div className="text-xs text-slate-400 mb-2">常用表情</div>
-                    <div className="grid grid-cols-8 gap-1 text-xl">
-                      {['😀','😁','😂','🤣','😊','😍','😎','😘','🤔','🥰','😅','😢','😡','👍','👎','🙏','👏','🎉','❤️','🔥','⭐','✅','❌'].map((emoji) => (
-                        <button
-                          key={emoji}
-                          type="button"
-                          className="hover:bg-slate-100 rounded-md flex items-center justify-center"
-                          onClick={() => handleEmojiSelect(emoji)}
-                        >
-                          {emoji}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  <div className="absolute bottom-12 left-0 z-10">
+                   <Picker
+                    data={data}
+                    onEmojiSelect={(emoji) => handleEmojiSelect(emoji.native)}
+                    theme="light"
+                  />
+                </div>
+              )} 
               </div>
               <div className="flex items-end gap-2">
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder={activeSession ? '输入消息...' : '请选择左侧会话后再发送'}
-                  rows={1}
-                  className="flex-1 bg-slate-50 border-none rounded-2xl px-4 py-3 focus:ring-2 focus:ring-blue-500/20 resize-none"
+                  rows={3}
+                  className="flex-1 bg-white border-none px-1 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-0 resize-none"
                   disabled={!activeSession}
                 />
                 <button
@@ -555,7 +569,7 @@ const Chat = () => {
                   className={`p-3 rounded-xl transition-all ${
                     message.trim() && activeSession && !sending
                       ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 hover:scale-105'
-                      : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                      : 'bg-blue-600 text-white opacity-50 cursor-not-allowed'
                   }`}
                   disabled={!message.trim() || !activeSession || sending}
                 >

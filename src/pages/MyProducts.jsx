@@ -5,6 +5,9 @@ import { Package, Clock, Eye, Heart, Edit, Trash2, Plus, Filter, Search, MoreVer
 import { userApi, productApi } from '../api';
 import { Link, useNavigate } from 'react-router-dom';
 import EditProductModal from '../components/EditProductModal';
+import LazyLottie from '../components/LazyLottie';
+import loaderCat from '../assets/Loader-cat.json';
+
 
 // 格式化时间函数
 const formatTime = (timeStr) => {
@@ -175,26 +178,39 @@ const MyProducts = () => {
               </span>
               我的发布
             </motion.h1>
-            <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.1 }}
-              className="text-slate-500 mt-2 ml-1"
-            >
-              管理你发布的所有商品，查看状态和浏览数据
-            </motion.p>
+            <div className="relative">
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.1 }}
+                className="text-slate-500 mt-2 ml-1"
+              >
+                管理你发布的所有商品，查看状态和浏览数据
+              </motion.p>
+              <div className="w-40 h-40 absolute -top-24 left-56 z-10">
+                <LazyLottie
+                  animationData={loaderCat}
+                  loop
+                  autoplay
+                  style={{ width: '100%', height: '100%' }}
+                />
+              </div>
+            </div>
           </div>
 
-          <Link to="/publish">
-            <motion.button 
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium shadow-lg shadow-blue-500/20 transition-all"
-            >
-              <Plus size={20} />
-              发布新商品
-            </motion.button>
-          </Link>
+          <div className="flex flex-col items-center mt-4">
+            
+            <Link to="/publish">
+              <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium shadow-lg shadow-blue-500/20 transition-all"
+              >
+                <Plus size={20} />
+                发布新商品
+              </motion.button>
+            </Link>
+          </div>
         </div>
 
         {/* Filters & Search */}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Bell, Plus, User, ShoppingBag, Menu, X, LogOut, Settings, Heart, Package } from 'lucide-react';
+import { Search, Bell, Plus, User, ShoppingBag, Menu, X, LogOut, Settings, Heart, Package, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -299,35 +299,40 @@ const Navbar = () => {
                   </Link>
 
                   {/* Hover Menu */}
-                  <div className="absolute right-0 top-full pt-2 w-56 opacity-0 translate-y-2 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-200 ease-out z-50">
-                    <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-2 overflow-hidden">
-                      <Link to={`/user/${currentUser?.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 rounded-xl transition-colors mb-1">
-                        <div className="w-12 h-12 rounded-full bg-slate-100 overflow-hidden">
+                  <div className="absolute right-0 top-full pt-3 w-72 opacity-0 translate-y-2 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-200 ease-out z-50">
+                    <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-3 overflow-hidden">
+                      <Link to={`/user/${currentUser?.id}`} className="flex items-center gap-4 px-4 py-4 hover:bg-slate-50 rounded-xl transition-colors mb-2">
+                        <div className="w-14 h-14 rounded-full bg-slate-100 overflow-hidden flex-shrink-0">
                            <img src={avatarUrl} alt="" className="w-full h-full object-cover"/>
                         </div>
-                        <div>
-                          <p className="font-bold text-sm text-slate-900">{currentUser?.nickname || currentUser?.username}</p>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-base text-slate-900 truncate">{currentUser?.nickname || currentUser?.username}</p>
+                          <p className="text-xs text-slate-400 mt-0.5">{currentUser?.campus || '下沙校区'}</p>
                         </div>
+                        <ChevronRight size={18} className="text-slate-300 flex-shrink-0" />
                       </Link>
-                      <div className="h-px bg-slate-100 my-1" />
-                      <Link to="/my-products" className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors">
-                        <Package size={16} />
-                        我的发布
+                      <div className="h-px bg-slate-100 my-2" />
+                      <Link to="/my-products" className="menu-item-float flex items-center gap-3 px-4 py-3 text-base text-slate-600 hover:text-blue-600 rounded-xl">
+                        <Package size={20} />
+                        <span className="flex-1">我的发布</span>
+                        <ChevronRight size={18} className="text-slate-300" />
                       </Link>
-                      <Link to="/my-orders" className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors">
-                        <ShoppingBag size={16} />
-                        我的订单
+                      <Link to="/my-orders" className="menu-item-float flex items-center gap-3 px-4 py-3 text-base text-slate-600 hover:text-blue-600 rounded-xl">
+                        <ShoppingBag size={20} />
+                        <span className="flex-1">我的订单</span>
+                        <ChevronRight size={18} className="text-slate-300" />
                       </Link>
-                      <Link to="/my-favorites" className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors">
-                        <Heart size={16} />
-                        我的收藏
+                      <Link to="/my-favorites" className="menu-item-float flex items-center gap-3 px-4 py-3 text-base text-slate-600 hover:text-blue-600 rounded-xl">
+                        <Heart size={20} />
+                        <span className="flex-1">我的收藏</span>
+                        <ChevronRight size={18} className="text-slate-300" />
                       </Link>
-                      <div className="h-px bg-slate-100 my-1" />
+                      <div className="h-px bg-slate-100 my-2" />
                       <button 
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                        className="menu-item-float w-full flex items-center gap-3 px-4 py-3 text-base text-red-600 rounded-xl"
                       >
-                        <LogOut size={16} />
+                        <LogOut size={20} />
                         退出登录
                       </button>
                     </div>

@@ -18,7 +18,8 @@ import {
   ShoppingBag, 
   Copy, 
   ExternalLink,
-  AlertCircle
+  AlertCircle,
+  XCircle
 } from 'lucide-react';
 import { orderApi, chatApi } from '../api';
 
@@ -30,6 +31,8 @@ const OrderDetail = () => {
   const [error, setError] = useState('');
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [shipLoading, setShipLoading] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   useEffect(() => {
     const loadOrder = async () => {
@@ -104,6 +107,36 @@ const OrderDetail = () => {
       alert('确认收货失败，请稍后重试');
     } finally {
       setConfirmLoading(false);
+    }
+  };
+
+  const handleCancelOrder = async () => {
+    if (!order) return;
+    try {
+      setCancelLoading(true);
+      const res = await orderApi.cancel(order.id);
+      if (res.success) {
+        setOrder(prev => ({ ...prev, status: 'CANCELLED' }));
+        // 自动发送取消订单消息到聊天
+        if (order.productId) {
+          try {
+            const chatRes = await chatApi.startChat(order.productId);
+            if (chatRes.success && chatRes.data?.id) {
+              await chatApi.sendMessage(chatRes.data.id, { content: '我已取消订单' });
+            }
+          } catch (chatErr) {
+            console.error('发送取消消息失败', chatErr);
+          }
+        }
+        setShowCancelModal(false);
+      } else {
+        alert(res.message || '取消订单失败');
+      }
+    } catch (e) {
+      console.error('取消订单失败', e);
+      alert('取消订单失败，请稍后重试');
+    } finally {
+      setCancelLoading(false);
     }
   };
 
@@ -444,10 +477,10 @@ const OrderDetail = () => {
                   <button 
                     onClick={handleConfirmReceipt}
                     disabled={confirmLoading}
-                    className="w-full py-3.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20"
                   >
                     {confirmLoading ? (
-                      <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <CheckCircle size={18} />
                     )}
@@ -470,6 +503,22 @@ const OrderDetail = () => {
                     发货
                   </button>
                 )}
+
+                {/* 取消订单（仅在进行中或交易中状态可取消） */}
+                {(order.status === 'PENDING' || order.status === 'SHIPPED') && (
+                  <button
+                    onClick={() => setShowCancelModal(true)}
+                    disabled={cancelLoading}
+                    className="w-full py-3.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {cancelLoading ? (
+                      <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <XCircle size={18} />
+                    )}
+                    取消订单
+                  </button>
+                )}
                 
                 <button className="w-full py-3.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl font-medium transition-colors flex items-center justify-center gap-2">
                   <AlertCircle size={18} />
@@ -488,6 +537,53 @@ const OrderDetail = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* 取消订单确认弹窗 */}
+      <AnimatePresence>
+        {showCancelModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="w-full max-w-sm bg-white rounded-3xl shadow-xl overflow-hidden"
+            >
+              <div className="p-6 text-center">
+                <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AlertCircle size={32} />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">确定要取消订单吗？</h3>
+                <p className="text-slate-500 text-sm leading-relaxed">
+                  取消后订单将无法恢复，如果卖家已发货，请先与卖家沟通协商。
+                </p>
+              </div>
+              <div className="p-6 pt-0 flex gap-3">
+                <button
+                  onClick={() => setShowCancelModal(false)}
+                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-colors"
+                >
+                  暂不取消
+                </button>
+                <button
+                  onClick={handleCancelOrder}
+                  disabled={cancelLoading}
+                  className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-red-500/20"
+                >
+                  {cancelLoading && (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  )}
+                  确认取消
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

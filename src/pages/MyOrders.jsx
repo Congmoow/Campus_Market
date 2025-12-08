@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, CheckCircle, Clock, Package, ChevronRight, MessageCircle, Truck } from 'lucide-react';
+import { ShoppingBag, CheckCircle, Clock, Package, ChevronRight, MessageCircle, Truck, XCircle, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { orderApi } from '../api';
+import { orderApi, chatApi } from '../api';
 
 const MyOrders = () => {
   const [activeTab, setActiveTab] = useState('BUY'); // BUY, SELL
@@ -14,6 +14,9 @@ const MyOrders = () => {
   const [confirmingOrder, setConfirmingOrder] = useState(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [confirmError, setConfirmError] = useState('');
+  const [cancelLoading, setCancelLoading] = useState(null); // 存储正在取消的订单id
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelTarget, setCancelTarget] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -195,15 +198,33 @@ const MyOrders = () => {
                            >
                              查看详情 <ChevronRight size={16} />
                            </button>
-                           {isBuy && order.status === 'PENDING' && (
+                           {isBuy && order.status === 'SHIPPED' && (
                              <button
-                               className="px-4 py-2 rounded-lg bg-emerald-50 text-emerald-700 text-sm font-medium hover:bg-emerald-100 transition-colors flex items-center gap-2"
+                               className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 transition-colors flex items-center gap-2 shadow-md shadow-emerald-500/20"
                                onClick={() => {
                                  setConfirmError('');
                                  setConfirmingOrder(order);
                                }}
                              >
+                               <CheckCircle size={16} />
                                确认收货
+                             </button>
+                           )}
+                           {(order.status === 'PENDING' || order.status === 'SHIPPED') && (
+                             <button
+                               className="px-4 py-2 rounded-lg bg-red-50 text-red-600 text-sm font-medium hover:bg-red-100 transition-colors flex items-center gap-2 disabled:opacity-70"
+                               disabled={cancelLoading === order.id}
+                               onClick={() => {
+                                 setCancelTarget(order);
+                                 setShowCancelModal(true);
+                               }}
+                             >
+                               {cancelLoading === order.id ? (
+                                 <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                               ) : (
+                                 <XCircle size={16} />
+                               )}
+                               取消订单
                              </button>
                            )}
                         </div>
@@ -301,6 +322,86 @@ const MyOrders = () => {
                   }}
                 >
                   {confirmLoading ? '确认中...' : '确认收货'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 取消订单确认弹窗 */}
+      <AnimatePresence>
+        {showCancelModal && cancelTarget && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="w-full max-w-sm bg-white rounded-3xl shadow-xl overflow-hidden"
+            >
+              <div className="p-6 text-center">
+                <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AlertCircle size={32} />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">确定要取消订单吗？</h3>
+                <p className="text-slate-500 text-sm leading-relaxed">
+                  取消后订单将无法恢复，如果卖家已发货，请先与卖家沟通协商。
+                </p>
+              </div>
+              <div className="p-6 pt-0 flex gap-3">
+                <button
+                  onClick={() => {
+                    if (cancelLoading) return;
+                    setShowCancelModal(false);
+                    setCancelTarget(null);
+                  }}
+                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-colors"
+                >
+                  暂不取消
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!cancelTarget) return;
+                    try {
+                      setCancelLoading(cancelTarget.id);
+                      const res = await orderApi.cancel(cancelTarget.id);
+                      if (res.success) {
+                        setOrders(prev => prev.map(o => o.id === cancelTarget.id ? { ...o, status: 'CANCELLED' } : o));
+                        // 自动发送取消订单消息到聊天
+                        if (cancelTarget.productId) {
+                          try {
+                            const chatRes = await chatApi.startChat(cancelTarget.productId);
+                            if (chatRes.success && chatRes.data?.id) {
+                              await chatApi.sendMessage(chatRes.data.id, { content: '我已取消订单' });
+                            }
+                          } catch (chatErr) {
+                            console.error('发送取消消息失败', chatErr);
+                          }
+                        }
+                        setShowCancelModal(false);
+                        setCancelTarget(null);
+                      } else {
+                        alert(res.message || '取消订单失败');
+                      }
+                    } catch (e) {
+                      console.error('取消订单失败', e);
+                      alert('取消订单失败，请稍后重试');
+                    } finally {
+                      setCancelLoading(null);
+                    }
+                  }}
+                  disabled={!!cancelLoading}
+                  className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-red-500/20"
+                >
+                  {cancelLoading && (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  )}
+                  确认取消
                 </button>
               </div>
             </motion.div>
