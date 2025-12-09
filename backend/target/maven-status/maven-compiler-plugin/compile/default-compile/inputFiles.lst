@@ -30,6 +30,7 @@ C:\Users\adminstar\Desktop\Market\backend\src\main\java\com\campus\market\auth\A
 C:\Users\adminstar\Desktop\Market\backend\src\main\java\com\campus\market\chat\ChatMessageRepository.java
 C:\Users\adminstar\Desktop\Market\backend\src\main\java\com\campus\market\chat\dto\SystemNotificationRequest.java
 C:\Users\adminstar\Desktop\Market\backend\src\main\java\com\campus\market\order\dto\OrderDto.java
+C:\Users\adminstar\Desktop\Market\backend\src\main\java\com\campus\market\auth\dto\ResetPasswordRequest.java
 C:\Users\adminstar\Desktop\Market\backend\src\main\java\com\campus\market\user\User.java
 C:\Users\adminstar\Desktop\Market\backend\src\main\java\com\campus\market\user\UserProfileRepository.java
 C:\Users\adminstar\Desktop\Market\backend\src\main\java\com\campus\market\auth\dto\LoginRequest.java

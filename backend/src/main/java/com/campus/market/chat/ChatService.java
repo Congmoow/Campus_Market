@@ -20,6 +20,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * 聊天领域服务。
+ *
+ * 负责：
+ * - 会话列表与消息列表查询
+ * - 发送普通消息 / 系统消息
+ * - 撤回消息、标记消息已读
+ * - 将会话/消息实体转换为前端使用的 DTO
+ */
 @Service
 @Transactional
 public class ChatService {

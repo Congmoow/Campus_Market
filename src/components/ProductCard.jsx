@@ -4,7 +4,8 @@ import { Heart, MapPin, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { favoriteApi } from '../api';
 
-// 简单的模块级缓存，避免为每个卡片重复请求收藏列表
+// 商品卡片组件：展示商品缩略图、价格、位置、卖家信息，并支持收藏/取消收藏
+// 使用模块级缓存避免对收藏列表的重复请求
 let favoriteIdsCache = null; // Set<number>
 let favoriteIdsPromise = null;
 

@@ -36,11 +36,13 @@ public class ProductController {
     public ApiResponse<Page<ProductListItemDto>> list(
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) java.math.BigDecimal minPrice,
+            @RequestParam(required = false) java.math.BigDecimal maxPrice,
             @RequestParam(required = false, defaultValue = "latest") String sort,
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "20") int size
     ) {
-        return ApiResponse.ok(productService.list(categoryId, keyword, sort, page, size));
+        return ApiResponse.ok(productService.list(categoryId, keyword, minPrice, maxPrice, sort, page, size));
     }
 
     @GetMapping("/products/{id}")

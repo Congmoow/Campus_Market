@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+/**
+ * 用户主页展示用的资料 DTO：包含基本信息、信用分、简介以及在售 / 已售统计。
+ */
 @Data
 public class UserProfileDto {
     private Long id;

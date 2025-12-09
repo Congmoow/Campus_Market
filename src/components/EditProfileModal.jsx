@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, User, MapPin, GraduationCap, School, FileText } from 'lucide-react';
 import { userApi, fileApi } from '../api';
 
+// 个人资料编辑弹窗：修改昵称、专业、年级、校区、简介和头像
 const EditProfileModal = ({ isOpen, onClose, currentProfile, onSuccess }) => {
   const [formData, setFormData] = useState({
     nickname: '',
@@ -89,17 +90,17 @@ const EditProfileModal = ({ isOpen, onClose, currentProfile, onSuccess }) => {
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[60] flex items-center justify-center p-4"
       >
-        {/* Backdrop */}
+        {/* 背景遮罩层 */}
         <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose}></div>
 
-        {/* Modal Content */}
+        {/* 弹窗主体内容 */}
         <motion.div
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
           className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden relative z-10"
         >
-          {/* Header */}
+          {/* 顶部标题栏 */}
           <div className="bg-gradient-to-r from-blue-600 to-cyan-500 px-8 py-6 text-white relative">
             <button 
               onClick={onClose}
@@ -111,7 +112,7 @@ const EditProfileModal = ({ isOpen, onClose, currentProfile, onSuccess }) => {
             <p className="text-blue-100 text-sm mt-1">完善你的个人资料，让大家更了解你</p>
           </div>
 
-          {/* Form */}
+          {/* 表单区域 */}
           <div className="p-8">
             {error && (
               <div className="mb-4 p-3 bg-red-50 text-red-500 text-sm rounded-lg">

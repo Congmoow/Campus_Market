@@ -7,6 +7,11 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * 创建商品请求体。
+ *
+ * 前端在发布商品时提交：标题、描述、价格、原价、分类信息、地点及图片 URL 列表。
+ */
 @Data
 public class CreateProductRequest {
 

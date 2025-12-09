@@ -6,6 +6,9 @@ import { cn } from '@/lib/utils';
 import AuthModal from './AuthModal';
 import { userApi, chatApi } from '../api';
 
+// 将后端返回的 ISO 时间字符串格式化为展示用的时间文案：
+// - 如果是今天，显示“时:分”；
+// - 否则显示“MM-DD”日期，用于通知列表右侧时间。
 const formatNotificationTime = (isoStr) => {
   if (!isoStr) return '';
   const d = new Date(isoStr);
@@ -17,26 +20,33 @@ const formatNotificationTime = (isoStr) => {
   return d.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' });
 };
 
+// 顶部导航栏组件：包含搜索框、消息通知、用户头像 / 登录入口以及发布按钮等
 const Navbar = () => {
+  // UI 状态：是否滚动（用于切换导航样式）、移动端菜单展开状态、搜索关键字
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
   
-  // 初始化登录状态和用户信息
+  // 初始化登录状态和用户信息：从 localStorage 中读取 token 与 user 信息
   const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem('token'));
   const [currentUser, setCurrentUser] = useState(() => {
     const userStr = localStorage.getItem('user');
     return userStr ? JSON.parse(userStr) : null;
   });
   
-  // 暂时使用模拟的消息通知数据，后续再接入后端接口
+  // 从后端聊天会话列表构造通知数据
   const [notifications, setNotifications] = useState([]);
+  // 通知加载状态（用于控制是否展示加载中占位 / 防止重复请求）
   const [notificationsLoading, setNotificationsLoading] = useState(false);
+  // 未读消息总数：聚合每个会话的 unreadCount 字段
   const unreadCount = notifications.reduce((sum, n) => sum + (n.unreadCount || 0), 0);
+  // 移动端是否展开通知列表
   const [showMobileNotifications, setShowMobileNotifications] = useState(false);
+  // 登录 / 注册弹窗是否显示
   const [showAuthModal, setShowAuthModal] = useState(false);
   const navigate = useNavigate();
 
+  // 将所有会话的未读数清零，并调用后端接口统一标记为已读
   const markAllNotificationsRead = async () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, unreadCount: 0 })));
     try {
@@ -46,6 +56,7 @@ const Navbar = () => {
     }
   };
 
+  // 监听窗口滚动，根据滚动距离切换导航栏的背景、边框与阴影效果
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -54,6 +65,7 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // 登录状态变化时，从后端拉取最新的聊天会话列表，并转换为通知列表所需结构
   useEffect(() => {
     const loadNotifications = async () => {
       if (!isLoggedIn) {
@@ -126,7 +138,7 @@ const Navbar = () => {
     }
   }, [isLoggedIn]);
 
-  // 监听 storage 变化（处理多窗口或组件间同步）
+  // 监听 storage 变化（处理多窗口或组件间同步登录状态与用户信息）
   useEffect(() => {
     const checkLogin = () => {
       const token = localStorage.getItem('token');
@@ -148,12 +160,14 @@ const Navbar = () => {
     return () => window.removeEventListener('user-profile-updated', handleProfileUpdated);
   }, []);
 
+  // 触发顶部搜索逻辑：将关键字通过路由参数带到搜索结果页
   const handleSearchSubmit = () => {
     const q = searchKeyword.trim();
     if (!q) return;
     navigate(`/search?q=${encodeURIComponent(q)}`);
   };
 
+  // 登录弹窗完成登录后，重新从 localStorage 拉取 token 和 user 信息
   const handleLoginSuccess = () => {
     const token = localStorage.getItem('token');
     setIsLoggedIn(!!token);
@@ -161,6 +175,7 @@ const Navbar = () => {
     setCurrentUser(userStr ? JSON.parse(userStr) : null);
   };
 
+  // 退出登录：清空本地 token 和用户信息，并跳转回首页
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -169,7 +184,7 @@ const Navbar = () => {
     navigate('/');
   };
 
-  // 获取头像 URL 或默认头像（统一使用后端 avatarUrl 字段）
+  // 获取头像 URL 或默认头像：优先使用后端返回的 avatarUrl，否则使用 DiceBear 生成的占位头像
   const avatarUrl = currentUser?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.id || currentUser?.username || 'guest'}`;
 
   return (
@@ -184,7 +199,7 @@ const Navbar = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
-            {/* Logo */}
+            {/* 左侧 Logo 区域 */}
             <Link to="/" className="flex items-center gap-2 group">
               <div className="bg-blue-600 text-white p-2 rounded-xl shadow-lg group-hover:shadow-blue-500/30 transition-all duration-300">
                 <ShoppingBag size={24} />
@@ -197,7 +212,7 @@ const Navbar = () => {
               </span>
             </Link>
 
-            {/* Desktop Search */}
+            {/* 桌面端搜索框 */}
             <div className="hidden md:flex items-center flex-1 max-w-md mx-8 relative group">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
                 <Search size={18} />
@@ -216,9 +231,9 @@ const Navbar = () => {
               />
             </div>
 
-            {/* Desktop Actions */}
+            {/* 桌面端右侧操作区域（消息通知 / 用户信息 / 发布按钮） */}
             <div className="hidden md:flex items-center gap-4">
-              {/* Notifications */}
+              {/* 消息通知图标及下拉 */}
               <div className="relative group" onMouseEnter={() => { if (unreadCount > 0) { markAllNotificationsRead(); } }}>
                 <button className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors relative">
                   <Bell size={20} />
@@ -359,7 +374,7 @@ const Navbar = () => {
               </Link>
             </div>
 
-            {/* Mobile Menu Button */}
+            {/* 移动端右侧按钮：消息通知 + 折叠菜单 */}
             <div className="flex items-center gap-2 md:hidden">
               <div className="relative">
                 <button
@@ -453,14 +468,14 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Auth Modal */}
+      {/* 登录 / 注册弹窗 */}
       <AuthModal 
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)}
         onLoginSuccess={handleLoginSuccess}
       />
 
-      {/* Mobile Menu Overlay */}
+      {/* 移动端抽屉菜单 */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div

@@ -53,6 +53,7 @@ com\campus\market\order\dto\OrderDto.class
 com\campus\market\product\ProductImage.class
 com\campus\market\user\UserProfile.class
 com\campus\market\auth\dto\LoginRequest.class
+com\campus\market\auth\dto\ResetPasswordRequest.class
 com\campus\market\product\Category.class
 com\campus\market\chat\ChatSession.class
 com\campus\market\product\dto\UpdateProductStatusRequest.class

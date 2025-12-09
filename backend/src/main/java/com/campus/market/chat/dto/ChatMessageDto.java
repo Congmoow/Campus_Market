@@ -4,6 +4,11 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+/**
+ * 聊天消息 DTO：用于前端展示单条消息内容。
+ *
+ * type 常见取值：TEXT / IMAGE / RECALL。
+ */
 @Data
 public class ChatMessageDto {
 

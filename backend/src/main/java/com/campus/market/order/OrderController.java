@@ -11,6 +11,16 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.List;
 
+/**
+ * 订单相关接口控制器。
+ *
+ * 暴露的能力包括：
+ * - 创建订单
+ * - 查询当前用户的订单列表
+ * - 查询订单详情
+ * - 买家确认收货
+ * - 卖家发货
+ */
 @RestController
 @RequestMapping("/api")
 public class OrderController {
@@ -23,6 +33,9 @@ public class OrderController {
         this.userRepository = userRepository;
     }
 
+    /**
+     * 根据请求中的 Principal 获取当前登录用户，并做统一的未登录 / 不存在校验。
+     */
     private User requireUser(Principal principal) {
         if (principal == null) {
             throw new BusinessException("未登录");

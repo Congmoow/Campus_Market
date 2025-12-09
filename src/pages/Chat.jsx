@@ -20,39 +20,52 @@ const formatTime = (isoStr) => {
 
 // 聊天气泡上方的时间分割显示规则：
 // - 同一会话内，相邻消息间隔 5 分钟内共用一条时间
-// - 当天消息：显示 HH:mm
-// - 一周内（非当天）：显示星期几
-// - 同一月内、非当周：显示几号
-// - 更早：显示完整日期
+// - 当天消息：直接显示时间，如 10:30
+// - 昨天消息：显示 "昨天 HH:mm"
+// - 本周内（前天~7天内）：显示星期几 + 时间，如 星期三 09:15
+// - 今年内但超过一周：显示月日 + 时间，如 11月25日 20:00
+// - 跨年消息：显示完整日期，如 2024年12月1日 10:30
 const formatMessageTimeLabel = (isoStr) => {
   if (!isoStr) return '';
   const d = new Date(isoStr);
   const now = new Date();
 
+  // 计算日期差（天数）
   const startOfDay = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const startNow = startOfDay(now);
   const startMsg = startOfDay(d);
   const diffDays = Math.floor((startNow - startMsg) / (24 * 60 * 60 * 1000));
 
-  const isToday = diffDays === 0;
-  const isSameMonth = now.getFullYear() === d.getFullYear() && now.getMonth() === d.getMonth();
+  // 格式化时间部分 HH:mm
+  const timeStr = d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
 
-  if (isToday) {
-    return d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  // 当天：直接显示时间
+  if (diffDays === 0) {
+    return timeStr;
   }
 
-  if (diffDays > 0 && diffDays < 7) {
-    const weekdayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-    return weekdayNames[d.getDay()];
+  // 昨天：显示 "昨天 HH:mm"
+  if (diffDays === 1) {
+    return `昨天 ${timeStr}`;
   }
 
-  if (isSameMonth) {
-    return `${d.getDate()}号`;
+  // 本周内（前天~7天内）：显示星期几 + 时间
+  if (diffDays >= 2 && diffDays < 7) {
+    const weekdayNames = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+    return `${weekdayNames[d.getDay()]} ${timeStr}`;
   }
 
-  return d.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
+  // 今年内但超过一周：显示月日 + 时间
+  const isSameYear = now.getFullYear() === d.getFullYear();
+  if (isSameYear) {
+    return `${d.getMonth() + 1}月${d.getDate()}日 ${timeStr}`;
+  }
+
+  // 跨年消息：显示完整日期
+  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${timeStr}`;
 };
 
+// 判断当前消息前后是否需要插入时间分割线
 const shouldShowTimeDivider = (messages, index) => {
   if (index === 0) return true;
   const cur = new Date(messages[index].createdAt);
@@ -60,6 +73,7 @@ const shouldShowTimeDivider = (messages, index) => {
   return cur.getTime() - prev.getTime() > 5 * 60 * 1000; // 超过 5 分钟显示一次
 };
 
+// 聊天页面：包含左侧会话列表 + 右侧消息窗口 + 底部输入区
 const Chat = () => {
   const [message, setMessage] = useState('');
   const [sessions, setSessions] = useState([]);
@@ -93,6 +107,7 @@ const Chat = () => {
   const messagesContainerRef = useRef(null);
   const imageInputRef = useRef(null);
 
+  // 将消息列表滚动到底部，behavior 控制滚动动画（smooth / auto）
   const scrollToBottom = (behavior = 'smooth') => {
     const container = messagesContainerRef.current;
     if (!container) return;
@@ -102,6 +117,7 @@ const Chat = () => {
     });
   };
 
+  // 每当消息列表变化时，根据是否为首次进入决定是否平滑滚动到底部
   useEffect(() => {
     if (!messages || messages.length === 0) return;
     const behavior = hasInitialScroll ? 'smooth' : 'auto';
@@ -116,6 +132,7 @@ const Chat = () => {
     return () => clearTimeout(timer);
   }, [messages, hasInitialScroll]);
 
+  // 加载当前用户的所有会话列表，并优先选中 URL 中指定的会话
   const loadSessions = async (preferredSessionId) => {
     setLoadingSessions(true);
     try {
@@ -146,6 +163,7 @@ const Chat = () => {
     }
   };
 
+  // 加载指定会话下的历史消息
   const loadMessages = async (sessionId) => {
     setLoadingMessages(true);
     try {
@@ -167,6 +185,7 @@ const Chat = () => {
     loadSessions(initialSessionId);
   }, [initialSessionId]);
 
+  // 在左侧点击某个会话时切换当前会话并刷新消息列表
   const handleSelectSession = async (session) => {
     if (session.id === currentSessionId) return;
     setCurrentSessionId(session.id);
@@ -174,6 +193,7 @@ const Chat = () => {
     await loadMessages(session.id);
   };
 
+  // 发送文本消息，并更新本地消息列表与会话列表中的预览
   const handleSend = async () => {
     if (!message.trim() || !currentSessionId) return;
     setSending(true);
@@ -219,6 +239,7 @@ const Chat = () => {
     imageInputRef.current.click();
   };
 
+  // 选择图片后，将图片读为 DataURL 并作为 IMAGE 类型消息发送
   const handleImageChange = async (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file || !currentSessionId) {
@@ -268,6 +289,7 @@ const Chat = () => {
     }
   };
 
+  // 是否允许撤回某条消息：仅本人发送且在 2 分钟内
   const canRecall = (msg) => {
     if (!currentUser || !msg || !msg.createdAt) return false;
     if (msg.type === 'RECALL') return false;
@@ -278,6 +300,7 @@ const Chat = () => {
     return diff <= 2 * 60 * 1000;
   };
 
+  // 撤回消息：调用后端撤回接口，并在本地将消息替换为 RECALL 类型
   const handleRecall = async (msg) => {
     if (!currentSessionId || !msg || !canRecall(msg)) return;
     const isLast = messages.length > 0 && messages[messages.length - 1].id === msg.id;
@@ -312,7 +335,7 @@ const Chat = () => {
       
       <div className="flex-1 pt-24 pb-6 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 overflow-hidden">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex h-full min-h-[520px]">
-          {/* Sidebar - Chat List */}
+          {/* 左侧会话列表区域 */}
           <div className="w-80 border-r border-slate-100 flex flex-col hidden md:flex">
             <div className="p-4 border-b border-slate-100">
               <div className="flex items-center gap-2">
@@ -361,9 +384,9 @@ const Chat = () => {
             </div>
           </div>
 
-          {/* Main Chat Area */}
+          {/* 右侧聊天主区域 */}
           <div className="flex-1 flex flex-col bg-white">
-            {/* Chat Header */}
+            {/* 聊天顶部：对方信息与正在沟通的商品 */}
             <div className="bg-white border-b border-slate-100">
               {activeSession ? (
                 <div className="flex flex-col">
@@ -435,7 +458,7 @@ const Chat = () => {
               )}
             </div>
 
-            {/* Messages */}
+            {/* 消息列表区域 */}
             <div
               ref={messagesContainerRef}
               className="flex-1 min-h-[260px] overflow-y-auto p-4 space-y-4 no-scrollbar bg-neutral-50"
@@ -517,7 +540,7 @@ const Chat = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area */}
+            {/* 底部输入区域（表情 / 图片 / 文本输入 / 发送按钮） */}
             <div className="px-4 py-3 bg-white border-t border-slate-100 flex flex-col gap-3">
               <div className="flex gap-2 relative">
                 <button

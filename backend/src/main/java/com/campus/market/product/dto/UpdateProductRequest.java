@@ -5,6 +5,9 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * 更新商品请求体：支持对标题、描述、价格、分类、地点和图片列表进行部分更新。
+ */
 @Data
 public class UpdateProductRequest {
 

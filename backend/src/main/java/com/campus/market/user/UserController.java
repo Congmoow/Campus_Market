@@ -13,6 +13,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 
+/**
+ * 用户相关接口控制器。
+ *
+ * 提供能力：
+ * - 获取当前登录用户资料 / 指定用户资料
+ * - 更新当前用户资料
+ * - 查询某个用户的在售 / 已售商品列表
+ */
 @RestController
 public class UserController {
 

@@ -11,6 +11,13 @@ mybatis:
   configuration:
     map-underscore-to-camel-case: true
 
+mybatis-plus:
+  global-config:
+    db-config:
+      id-type: auto
+  configuration:
+    map-underscore-to-camel-case: true
+
   jackson:
     time-zone: Asia/Shanghai
 

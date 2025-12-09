@@ -23,6 +23,16 @@ import java.util.Optional;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * 商品领域服务。
+ *
+ * 职责包括：
+ * - 查询最新商品、按条件分页搜索商品
+ * - 获取商品详情
+ * - 创建 / 更新 / 删除（软删）商品
+ * - 更新商品状态、浏览量
+ * - 将商品实体转换为前端使用的列表/详情 DTO
+ */
 @Service
 @Transactional
 public class ProductService {
@@ -42,6 +52,9 @@ public class ProductService {
         this.userProfileRepository = userProfileRepository;
     }
 
+    /**
+     * 获取最新发布的在售商品列表。
+     */
     @Transactional(readOnly = true)
     public List<ProductListItemDto> getLatest(int limit) {
         com.baomidou.mybatisplus.extension.plugins.pagination.Page<Product> page =
@@ -55,8 +68,11 @@ public class ProductService {
         return products.stream().map(this::toListItemDto).collect(Collectors.toList());
     }
 
+    /**
+     * 条件分页查询商品列表：支持按分类、关键字、价格区间和排序方式筛选。
+     */
     @Transactional(readOnly = true)
-    public Page<ProductListItemDto> list(Long categoryId, String keyword, String sort, int page, int size) {
+    public Page<ProductListItemDto> list(Long categoryId, String keyword, java.math.BigDecimal minPrice, java.math.BigDecimal maxPrice, String sort, int page, int size) {
         String sortBy;
         String sortDir;
         if ("priceAsc".equalsIgnoreCase(sort)) {
@@ -77,11 +93,20 @@ public class ProductService {
                 new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(page + 1L, size);
         QueryWrapper<Product> wrapper = new QueryWrapper<>();
 
+        // 只查询在售商品
+        wrapper.eq("status", "ON_SALE");
+
         if (categoryId != null) {
             wrapper.eq("category_id", categoryId);
         }
         if (keyword != null && !keyword.isBlank()) {
             wrapper.apply("LOWER(title) LIKE '%' || LOWER({0}) || '%'", keyword);
+        }
+        if (minPrice != null) {
+            wrapper.ge("price", minPrice);
+        }
+        if (maxPrice != null) {
+            wrapper.le("price", maxPrice);
         }
 
         if ("price".equals(sortBy)) {
@@ -112,6 +137,9 @@ public class ProductService {
         return new PageImpl<>(dtoList, pageable, total);
     }
 
+    /**
+     * 查询商品详情，包含图片列表和卖家信息。
+     */
     @Transactional(readOnly = true)
     public ProductDto getDetail(Long id) {
         Product product = productRepository.findById(id)
@@ -149,6 +177,9 @@ public class ProductService {
         return dto;
     }
 
+    /**
+     * 创建商品：当前登录用户作为卖家，落地商品及其图片，并返回完整详情。
+     */
     public ProductDto createProduct(Long sellerId, CreateProductRequest request) {
         if (sellerId == null) {
             throw new BusinessException("未登录");
@@ -197,6 +228,9 @@ public class ProductService {
         return getDetail(product.getId());
     }
 
+    /**
+     * 更新商品：校验归属权后，按请求内容部分更新字段及图片。
+     */
     public ProductDto updateProduct(Long id, Long sellerId, UpdateProductRequest request) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("商品不存在"));
@@ -255,6 +289,9 @@ public class ProductService {
         return getDetail(id);
     }
 
+    /**
+     * 获取全部商品分类列表。
+     */
     @Transactional(readOnly = true)
     public List<CategoryDto> getCategories() {
         return categoryRepository.findAll().stream()
@@ -262,6 +299,9 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 按卖家维度分页查询商品列表，可按状态（在售/已售/已删）筛选。
+     */
     @Transactional(readOnly = true)
     public Page<ProductListItemDto> listBySeller(Long sellerId, String status, int page, int size) {
         com.baomidou.mybatisplus.extension.plugins.pagination.Page<Product> mpPage =
@@ -286,6 +326,9 @@ public class ProductService {
         return new PageImpl<>(dtoList, pageable, total);
     }
 
+    /**
+     * 更新商品状态：仅允许商品卖家操作，并限制在 ON_SALE/SOLD/DELETED 范围内。
+     */
     public ProductDto updateStatus(Long id, Long sellerId, String status) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("商品不存在"));
@@ -305,6 +348,9 @@ public class ProductService {
         return getDetail(id);
     }
 
+    /**
+     * 软删除商品：本质上是将状态置为 DELETED。
+     */
     public void softDeleteProduct(Long id, Long sellerId) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("商品不存在"));
@@ -318,6 +364,9 @@ public class ProductService {
         productRepository.update(product);
     }
 
+    /**
+     * 增加商品浏览次数：用于前端详情页曝光统计。
+     */
     public void increaseViewCount(Long id) {
         productRepository.findById(id).ifPresent(product -> {
             Long current = product.getViewCount();
@@ -330,6 +379,9 @@ public class ProductService {
         });
     }
 
+    /**
+     * 将商品实体转换为前端列表使用的 ProductListItemDto。
+     */
     public ProductListItemDto toListItemDto(Product product) {
         ProductListItemDto dto = new ProductListItemDto();
         dto.setId(product.getId());

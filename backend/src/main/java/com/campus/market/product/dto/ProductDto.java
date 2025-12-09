@@ -6,6 +6,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 商品详情 DTO：用于商品详情页展示，包含价格、描述、分类、图片列表及卖家信息等。
+ */
 @Data
 public class ProductDto {
 

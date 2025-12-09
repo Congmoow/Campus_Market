@@ -6,6 +6,9 @@ import { useParams, Link } from 'react-router-dom';
 import { MapPin, Calendar, ShieldCheck, MessageCircle } from 'lucide-react';
 import { userApi } from '../api';
 
+import welcomeSvg from '../assets/welcome.svg';
+
+// 将后端时间字符串格式化为“几分钟前 / 几小时前 / 几天前 / 日期”文案
 const formatTime = (timeStr) => {
   if (!timeStr) return '';
   const date = new Date(timeStr);
@@ -20,6 +23,7 @@ const formatTime = (timeStr) => {
   return date.toLocaleDateString('zh-CN');
 };
 
+// 用户个人主页：展示头像、基本信息以及该用户的在售 / 已售商品
 const UserProfile = () => {
   const { id } = useParams();
   const [profile, setProfile] = useState(null);
@@ -128,14 +132,19 @@ const UserProfile = () => {
       <Navbar />
       
       <div className="pt-32 max-w-5xl mx-auto px-4 sm:px-6">
-        {/* Profile Header Card */}
-        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-8">
-          {/* Cover Image */}
-          <div className="h-40 bg-gradient-to-r from-blue-600 to-cyan-500 relative">
+        {/* 用户信息卡片 */}
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 mb-8">
+          {/* 顶部背景横幅 */}
+          <div className="h-40 bg-gradient-to-r from-blue-600 to-cyan-500 relative rounded-t-3xl overflow-visible">
+            <img
+              src={welcomeSvg}
+              alt="个人主页欢迎插画"
+              className="absolute right-80 -top-24 h-72 sm:h-72 pointer-events-none select-none opacity-90"
+            />
             {isCurrentUser && (
                <button 
                  onClick={() => setShowEditModal(true)}
-                 className="absolute top-4 right-4 bg-white/20 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-white/30 transition-colors"
+                 className="absolute top-16 right-16 bg-white/20 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-white/30 transition-colors"
                >
                  编辑个人信息
                </button>
@@ -144,7 +153,7 @@ const UserProfile = () => {
           
           <div className="px-8 pb-8">
             <div className="relative flex justify-between items-end -mt-12 mb-6">
-              <div className="w-32 h-32 rounded-full bg-white p-1.5 shadow-xl ring-4 ring-white/50">
+              <div className="w-32 h-32 rounded-full shadow-xl">
                 <img 
                   src={profile?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile?.id || id || profile?.username || 'user'}`}
                   alt={profile?.nickname || profile?.username || '用户头像'} 
@@ -165,7 +174,7 @@ const UserProfile = () => {
             </div>
 
             <div className="flex flex-col md:flex-row gap-8">
-              {/* Left: User Info */}
+              {/* 左侧：用户基本信息 */}
               <div className="md:w-1/3 space-y-6">
                 <div>
                   <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
@@ -198,7 +207,7 @@ const UserProfile = () => {
                 </div>
               </div>
 
-              {/* Right: Products */}
+              {/* 右侧：该用户的商品列表 */}
               <div className="flex-1">
                 <div className="flex items-center gap-10 mb-6 border-b border-slate-100 pb-4">
                   <div

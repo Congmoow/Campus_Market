@@ -5,6 +5,9 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * 商品列表项 DTO：用于首页 / 列表页卡片展示的精简字段集合。
+ */
 @Data
 public class ProductListItemDto {
 

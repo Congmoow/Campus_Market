@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Upload, Trash2, Save, Loader2, ChevronDown } from 'lucide-react';
 import { fileApi } from '../api';
 
+// 商品编辑弹窗：用于修改已发布商品的标题、价格、分类、图片等信息
 const CAMPUS_OPTIONS = ['下沙校区', '南浔校区'];
 const CATEGORY_OPTIONS = [
   '数码产品',
@@ -152,7 +153,7 @@ const EditProductModal = ({ isOpen, onClose, product, categories, onSave }) => {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {/* 背景遮罩层 */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -162,14 +163,14 @@ const EditProductModal = ({ isOpen, onClose, product, categories, onSave }) => {
           />
 
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4 pointer-events-none">
-            {/* Modal */}
+            {/* 弹窗容器 */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="w-full max-w-3xl max-h-[85vh] bg-white rounded-2xl shadow-2xl overflow-hidden pointer-events-auto flex flex-col"
             >
-            {/* Header */}
+            {/* 顶部标题栏 */}
             <div className="flex-shrink-0 px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50">
               <h2 className="text-xl font-bold text-slate-900">编辑商品信息</h2>
               <button
@@ -180,7 +181,7 @@ const EditProductModal = ({ isOpen, onClose, product, categories, onSave }) => {
               </button>
             </div>
 
-            {/* Content */}
+            {/* 中间表单内容 */}
             <div className="flex-1 min-h-0 overflow-y-auto p-6">
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* 基本信息 */}
@@ -429,7 +430,7 @@ const EditProductModal = ({ isOpen, onClose, product, categories, onSave }) => {
               </form>
             </div>
 
-            {/* Footer */}
+            {/* 底部操作按钮区域 */}
             <div className="flex-shrink-0 px-6 pt-4 pb-4 border-t border-slate-100 flex items-center justify-end gap-3 bg-slate-50">
               <button
                 type="button"

@@ -18,6 +18,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * 订单领域服务。
+ *
+ * 负责处理与订单相关的业务逻辑：
+ * - 创建订单（校验商品状态、买卖双方信息等）
+ * - 卖家发货、买家确认收货
+ * - 查询当前用户的订单列表和订单详情
+ *
+ * 同时会通过 ChatService 发送与订单相关的系统消息，方便买卖双方在聊天中同步状态。
+ */
 @Service
 @Transactional
 public class OrderService {
@@ -44,6 +54,7 @@ public class OrderService {
      * 创建订单：当前登录用户作为买家，根据商品 ID 生成订单。
      */
     public OrderDto createOrder(Long buyerId, CreateOrderRequest request) {
+        // 基础参数校验：必须已登录且携带 productId
         if (buyerId == null) {
             throw new BusinessException("未登录");
         }
@@ -51,16 +62,20 @@ public class OrderService {
             throw new BusinessException("productId 不能为空");
         }
 
+        // 查询商品并校验是否存在
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new BusinessException("商品不存在"));
 
+        // 不允许购买自己的商品
         if (Objects.equals(product.getSellerId(), buyerId)) {
             throw new BusinessException("不能购买自己的商品");
         }
+        // 仅当商品处于 ON_SALE（在售）状态时才允许下单
         if (!"ON_SALE".equals(product.getStatus())) {
             throw new BusinessException("该商品当前不可购买");
         }
 
+        // 构造订单实体，将当前价格、地点等信息拍成快照
         OrderEntity order = new OrderEntity();
         order.setBuyerId(buyerId);
         order.setSellerId(product.getSellerId());

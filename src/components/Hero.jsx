@@ -1,12 +1,13 @@
 import React, { memo } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, BookOpen, Bike, Play } from 'lucide-react';
+import { Sparkles, BookOpen, Bike } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Search } from '@icon-park/react';
 import LazyLottie from './LazyLottie';
 import shoppingCartAnimation from '../assets/shopping-cart.json';
 import mobileEarnAnimation from '../assets/men-using-mobile-and-earn-money.json';
 
-
+// 首页顶部 Hero 区域：品牌标语 + CTA 按钮 + Lottie 动画装饰
 const FloatingIcon = ({ icon: Icon, delay, className }) => (
   <motion.div
     initial={{ y: 0 }}
@@ -27,7 +28,7 @@ const FloatingIcon = ({ icon: Icon, delay, className }) => (
 const Hero = () => {
   return (
     <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
-      {/* Background Elements */}
+      {/* 背景渐变光斑装饰 */}
       <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[1000px] bg-blue-100/50 rounded-full blur-3xl opacity-60 animate-pulse-slow"></div>
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-cyan-100/40 rounded-full blur-3xl opacity-50 translate-x-1/3 -translate-y-1/4"></div>
@@ -110,7 +111,13 @@ const Hero = () => {
             <Link to="/market" className="w-full sm:w-auto">
               <button className="w-full sm:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold shadow-lg shadow-blue-500/30 transition-all hover:scale-105 flex items-center justify-center gap-2 group">
                 立即开始探索
-                <Play className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <Search
+                  theme="outline"
+                  size="30"
+                  fill="#ffffff"
+                  strokeLinecap="square"
+                  className="group-hover:translate-x-1 transition-transform"
+                />
               </button>
             </Link>
           </motion.div>

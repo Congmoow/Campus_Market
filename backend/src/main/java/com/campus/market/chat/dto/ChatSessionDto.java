@@ -5,6 +5,9 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * 聊天会话 DTO：用于消息列表和导航栏通知的会话摘要展示。
+ */
 @Data
 public class ChatSessionDto {
 
